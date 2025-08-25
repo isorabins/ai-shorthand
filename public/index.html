@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~TokenCompressor - AI Shorthand Evolution Lab</title>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="/css/gameboy-theme.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/animations.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤖</text></svg>">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>~TokenCompressor</h1>
+            <div class="tagline">AI Agents Discovering Shorthand Through Evolution</div>
+        </header>
+        
+        <div class="marquee" id="marquee">
+            <div class="marquee-content">
+                🚀 Loading discovery lab... | Next testing ceremony in: <span id="marquee-countdown">--:--</span>
+            </div>
+        </div>
+        
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat">Hour: <span class="stat-value" id="current-hour">--</span></div>
+            <div class="stat">Codex Size: <span class="stat-value" id="codex-size">0</span></div>
+            <div class="stat">Articles Processed: <span class="stat-value" id="articles-processed">0</span></div>
+            <div class="stat">Pending Tests: <span class="stat-value" id="pending-submissions">0</span></div>
+            <div class="stat">Status: <span class="stat-value" id="status-indicator">OFFLINE</span></div>
+        </div>
+        
+        <div class="main-content">
+            <div class="agent-window" id="discovery-agent-window">
+                <div class="agent-header">
+                    <span>🔍 Discovery Agent (Web Search + Analysis)</span>
+                    <div class="agent-status" id="discovery-status"></div>
+                </div>
+                <div class="agent-chat" id="discovery-chat">
+                    <div class="message discovery">
+                        <div class="message-header">[Discovery Agent]</div>
+                        <div>Initializing web search and token analysis...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="agent-window" id="generation-agent-window">
+                <div class="agent-header">
+                    <span>🎨 Generation Agent (Compression Creation)</span>
+                    <div class="agent-status" id="generation-status"></div>
+                </div>
+                <div class="agent-chat" id="generation-chat">
+                    <div class="message generation">
+                        <div class="message-header">[Generation Agent]</div>
+                        <div>Ready to create innovative compressions...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testing-zone" id="testing-zone">
+            <div class="testing-header">
+                <span>⚡ Validation Agent (Testing Ceremony)</span>
+                <div class="countdown" id="countdown">Next test in: --:--</div>
+            </div>
+            <div class="agent-chat" id="validation-chat">
+                <div class="message validation">
+                    <div class="message-header">[Validation Agent]</div>
+                    <div>Standing by for testing ceremony...</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="submission-area" id="submission-area">
+            <div class="submission-header">💡 Submit Your Compression Idea</div>
+            <form class="submission-form" id="submission-form">
+                <div class="form-group">
+                    <label for="user-name">Your Name</label>
+                    <input type="text" id="user-name" name="name" placeholder="TokenHunter42" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" placeholder="you@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Compression</label>
+                    <div class="compression-inputs">
+                        <input type="text" id="original-word" name="original" placeholder="approximately" required>
+                        <span class="arrow">→</span>
+                        <input type="text" id="compressed-word" name="compressed" placeholder="≈" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="explanation">Explanation (optional)</label>
+                    <textarea id="explanation" name="explanation" placeholder="How does this compression work?"></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="daily-updates" name="daily_updates">
+                    <label for="daily-updates">Send me daily discovery updates!</label>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Compression</button>
+            </form>
+            
+            <div class="test-section" style="margin-top: 30px;">
+                <div class="submission-header">🧪 Test a Compression</div>
+                <form class="test-form" id="test-form">
+                    <div class="compression-inputs">
+                        <input type="text" name="test-original" placeholder="Original phrase" required>
+                        <span class="arrow">→</span>
+                        <input type="text" name="test-compressed" placeholder="Compressed version" required>
+                        <button type="submit" class="submit-btn">Test</button>
+                    </div>
+                </form>
+                <div id="test-result" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+        
+        <div class="leaderboard" id="leaderboard">
+            <div class="leaderboard-header">
+                <span>🏆 Today's Leaderboard</span>
+                <span style="font-size: 16px;">Resets in: <span id="leaderboard-reset">--:--:--</span></span>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Compressions</th>
+                        <th>Tokens Saved</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr>
+                        <td class="rank-1">#1</td>
+                        <td>Loading...</td>
+                        <td>--</td>
+                        <td>--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="history-timeline" id="history-timeline">
+            <div class="timeline-header">📜 Recent Compressions</div>
+            <div id="recent-compressions">
+                <div class="compression-item">
+                    <div class="timeline-time">Loading...</div>
+                    <div class="timeline-content">Fetching recent discoveries...</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built with 💚 by the Token Compression Lab | Saving the world, one token at a time</p>
+            <button class="submit-btn" id="export-codex" style="margin-top: 20px;">Export Codex JSON</button>
+        </footer>
+    </div>
+    
+    <!-- Error Boundary -->
+    <div id="error-boundary" class="error-boundary" style="display: none;">
+        <div class="error-content">
+            <h3>🚨 System Error</h3>
+            <p id="error-message">Something went wrong. Please refresh the page.</p>
+            <button class="submit-btn" onclick="location.reload()">Refresh</button>
+        </div>
+    </div>
+    
+    <!-- Loading Overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Initializing AI Agents...</p>
+        </div>
+    </div>
+    
+    <!-- Notifications Container -->
+    <div id="notifications" class="notifications-container"></div>
+    
+    <!-- JavaScript Modules -->
+    <script src="/js/config.js"></script>
+    <script src="/js/utils/error-handler.js"></script>
+    <script src="/js/utils/api-client.js"></script>
+    <script src="/js/utils/supabase-client.js"></script>
+    <script src="/js/learning-system.js"></script>
+    <script src="/js/agents/discovery-agent.js"></script>
+    <script src="/js/agents/generation-agent.js"></script>
+    <script src="/js/agents/validation-agent.js"></script>
+    <script src="/js/orchestrator.js"></script>
+    <script src="/js/ui/real-time-ui.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>

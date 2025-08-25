@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>~TokenCompressor - AI Shorthand Evolution Lab</title>
+    
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        /* GameBoy Color / GeoCities Aesthetic */
+        @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(45deg, #8b956d 25%, #9cA971 25%, #9cA971 50%, #8b956d 50%, #8b956d 75%, #9cA971 75%, #9cA971);
+            background-size: 40px 40px;
+            color: #2e3020;
+            font-size: 18px;
+            line-height: 1.4;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: #c4cfa1;
+            border: 4px solid #2e3020;
+            padding: 20px;
+            box-shadow: 8px 8px 0px #2e3020;
+        }
+        
+        h1 {
+            font-size: 48px;
+            color: #2e3020;
+            text-shadow: 2px 2px 0px #8b956d;
+            animation: blink 2s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.8; }
+        }
+        
+        .tagline {
+            font-size: 20px;
+            color: #4a5139;
+            margin-top: 10px;
+        }
+        
+        .stats-bar {
+            background: #2e3020;
+            color: #c4cfa1;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 2px solid #1a1c10;
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        
+        .stat {
+            margin: 5px;
+        }
+        
+        .stat-value {
+            color: #9cA971;
+            font-weight: bold;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .agent-window {
+            background: #c4cfa1;
+            border: 4px solid #2e3020;
+            padding: 15px;
+            height: 400px;
+            overflow-y: auto;
+            box-shadow: 6px 6px 0px #2e3020;
+            position: relative;
+        }
+        
+        .agent-header {
+            background: #2e3020;
+            color: #c4cfa1;
+            padding: 8px;
+            margin: -15px -15px 15px -15px;
+            font-size: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .agent-status {
+            width: 12px;
+            height: 12px;
+            background: #9cA971;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .agent-chat {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        
+        .message {
+            margin-bottom: 12px;
+            padding: 8px;
+            background: rgba(139, 149, 109, 0.2);
+            border-left: 3px solid #8b956d;
+        }
+        
+        .message.agent1 {
+            border-left-color: #4a5139;
+        }
+        
+        .message.agent2 {
+            border-left-color: #6b7353;
+        }
+        
+        .message-header {
+            font-weight: bold;
+            color: #2e3020;
+            margin-bottom: 4px;
+        }
+        
+        .testing-zone {
+            background: #2e3020;
+            border: 4px solid #1a1c10;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 6px 6px 0px #1a1c10;
+        }
+        
+        .testing-header {
+            color: #9cA971;
+            font-size: 24px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .countdown {
+            color: #c4cfa1;
+            font-size: 20px;
+            margin-left: auto;
+        }
+        
+        .test-results {
+            background: #1a1c10;
+            padding: 15px;
+            border-radius: 4px;
+            color: #c4cfa1;
+            min-height: 100px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 16px;
+        }
+        
+        .result-item {
+            margin-bottom: 8px;
+            padding: 5px;
+            background: rgba(156, 169, 113, 0.1);
+        }
+        
+        .result-item.success {
+            border-left: 3px solid #9cA971;
+        }
+        
+        .result-item.failure {
+            border-left: 3px solid #8b5a3c;
+        }
+        
+        .submission-area {
+            background: #c4cfa1;
+            border: 4px solid #2e3020;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 6px 6px 0px #2e3020;
+        }
+        
+        .submission-header {
+            font-size: 24px;
+            color: #2e3020;
+            margin-bottom: 15px;
+        }
+        
+        .submission-form {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .form-group {
+            display: grid;
+            gap: 5px;
+        }
+        
+        label {
+            color: #4a5139;
+            font-size: 18px;
+        }
+        
+        input[type="text"],
+        input[type="email"] {
+            padding: 10px;
+            font-family: 'VT323', monospace;
+            font-size: 18px;
+            background: #e8ecd5;
+            border: 2px solid #2e3020;
+            color: #2e3020;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus {
+            outline: none;
+            background: #f0f3e0;
+            box-shadow: 0 0 0 2px #8b956d;
+        }
+        
+        .compression-inputs {
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .arrow {
+            font-size: 24px;
+            color: #2e3020;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        .submit-btn {
+            padding: 12px 24px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            background: #4a5139;
+            color: #c4cfa1;
+            border: 3px solid #2e3020;
+            cursor: pointer;
+            box-shadow: 4px 4px 0px #2e3020;
+            transition: all 0.2s;
+        }
+        
+        .submit-btn:hover {
+            transform: translate(2px, 2px);
+            box-shadow: 2px 2px 0px #2e3020;
+        }
+        
+        .submit-btn:active {
+            transform: translate(4px, 4px);
+            box-shadow: none;
+        }
+        
+        .leaderboard {
+            background: #c4cfa1;
+            border: 4px solid #2e3020;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 6px 6px 0px #2e3020;
+        }
+        
+        .leaderboard-header {
+            font-size: 24px;
+            color: #2e3020;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 2px solid #8b956d;
+        }
+        
+        .leaderboard-table th {
+            background: #2e3020;
+            color: #c4cfa1;
+        }
+        
+        .leaderboard-table tr:hover {
+            background: rgba(139, 149, 109, 0.2);
+        }
+        
+        .rank-1 { color: #d4af37; font-weight: bold; }
+        .rank-2 { color: #c0c0c0; font-weight: bold; }
+        .rank-3 { color: #cd7f32; font-weight: bold; }
+        
+        .history-timeline {
+            background: #2e3020;
+            border: 4px solid #1a1c10;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 6px 6px 0px #1a1c10;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .timeline-header {
+            color: #9cA971;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        
+        .timeline-item {
+            border-left: 3px solid #4a5139;
+            padding-left: 20px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            background: #9cA971;
+            border: 2px solid #2e3020;
+            border-radius: 50%;
+        }
+        
+        .timeline-time {
+            color: #8b956d;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+        
+        .timeline-content {
+            color: #c4cfa1;
+            font-size: 18px;
+        }
+        
+        .timeline-savings {
+            color: #9cA971;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #4a5139;
+            background: #c4cfa1;
+            border: 4px solid #2e3020;
+            box-shadow: 6px 6px 0px #2e3020;
+        }
+        
+        .marquee {
+            background: #2e3020;
+            color: #9cA971;
+            padding: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        
+        .marquee-content {
+            display: inline-block;
+            animation: scroll 30s linear infinite;
+        }
+        
+        @keyframes scroll {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #8b956d;
+            border: 2px solid #2e3020;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #2e3020;
+            border: 2px solid #4a5139;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4a5139;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>~TokenCompressor</h1>
+            <div class="tagline">AI Agents Discovering Shorthand Through Evolution</div>
+        </header>
+        
+        <div class="marquee">
+            <div class="marquee-content">
+                🚀 LATEST: "approximately" → "≈" saves 2 tokens! | 🏆 Human wins: 24 | 🤖 AI wins: 32 | 
+                📊 Total compressions: 847 | 💰 Tokens saved today: 147,293 | 
+                ⏰ Next testing ceremony in: <span id="marquee-countdown">--:--</span>
+            </div>
+        </div>
+        
+        <div class="stats-bar">
+            <div class="stat">Hour: <span class="stat-value" id="current-hour">47</span></div>
+            <div class="stat">Codex Size: <span class="stat-value" id="codex-size">0</span></div>
+            <div class="stat">Articles Processed: <span class="stat-value" id="articles-processed">0</span></div>
+            <div class="stat">Active Users: <span class="stat-value" id="active-users">0</span></div>
+            <div class="stat">Total Savings: <span class="stat-value" id="total-savings">0</span> tokens</div>
+        </div>
+        
+        <div class="main-content">
+            <div class="agent-window">
+                <div class="agent-header">
+                    <span>🤖 Agent 1: Token Waste Detector (DeepSeek)</span>
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-chat" id="agent1-chat">
+                    <div class="message agent1">
+                        <div class="message-header">[Agent 1]</div>
+                        <div>Initializing token waste detection...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="agent-window">
+                <div class="agent-header">
+                    <span>🤖 Agent 2: Compression Inventor (Groq Llama)</span>
+                    <div class="agent-status"></div>
+                </div>
+                <div class="agent-chat" id="agent2-chat">
+                    <div class="message agent2">
+                        <div class="message-header">[Agent 2]</div>
+                        <div>Ready to create compressions...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="testing-zone">
+            <div class="testing-header">
+                <span>⚡ Testing Agent (DeepSeek)</span>
+                <div class="countdown" id="countdown">Next test in: --:--</div>
+            </div>
+            <div class="test-results" id="test-results">
+                <div class="result-item">Waiting for next testing ceremony...</div>
+            </div>
+        </div>
+        
+        <div class="submission-area">
+            <div class="submission-header">💡 Submit Your Compression Idea</div>
+            <form class="submission-form" id="submission-form">
+                <div class="form-group">
+                    <label for="user-name">Your Name</label>
+                    <input type="text" id="user-name" name="name" placeholder="TokenHunter42" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="user-email">Email</label>
+                    <input type="email" id="user-email" name="email" placeholder="you@example.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Compression</label>
+                    <div class="compression-inputs">
+                        <input type="text" id="original-word" name="original" placeholder="approximately" required>
+                        <span class="arrow">→</span>
+                        <input type="text" id="compressed-word" name="compressed" placeholder="≈" required>
+                    </div>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="daily-updates" name="daily_updates">
+                    <label for="daily-updates">Send me daily discovery updates!</label>
+                </div>
+                
+                <button type="submit" class="submit-btn">Submit Compression</button>
+            </form>
+        </div>
+        
+        <div class="leaderboard">
+            <div class="leaderboard-header">
+                <span>🏆 Today's Leaderboard</span>
+                <span style="font-size: 16px;">Resets in: <span id="leaderboard-reset">--:--:--</span></span>
+            </div>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Compressions</th>
+                        <th>Tokens Saved</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    <tr>
+                        <td class="rank-1">#1</td>
+                        <td>-</td>
+                        <td>0</td>
+                        <td>0</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="history-timeline">
+            <div class="timeline-header">📜 Evolution Timeline</div>
+            <div id="timeline-content">
+                <div class="timeline-item">
+                    <div class="timeline-time">Starting...</div>
+                    <div class="timeline-content">Waiting for first discoveries...</div>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Built with 💚 by the Token Compression Lab | Saving the world, one token at a time</p>
+        </footer>
+    </div>
+    
+    <script>
+        /*
+        ============================================
+        SUPABASE DATABASE SETUP
+        ============================================
+        
+        Run this SQL in your Supabase SQL editor:
+        
+        -- Compressions table (discovered compressions)
+        CREATE TABLE compressions (
+            id SERIAL PRIMARY KEY,
+            original TEXT NOT NULL,
+            compressed TEXT NOT NULL,
+            source TEXT,
+            hour INTEGER,
+            tokens_saved INTEGER DEFAULT 0,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        -- Submissions table (human suggestions)
+        CREATE TABLE submissions (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            original TEXT NOT NULL,
+            compressed TEXT NOT NULL,
+            daily_updates BOOLEAN DEFAULT FALSE,
+            tested BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        -- Leaderboard table (tracks daily winners)
+        CREATE TABLE leaderboard (
+            id SERIAL PRIMARY KEY,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            compressions_count INTEGER DEFAULT 0,
+            tokens_saved INTEGER DEFAULT 0,
+            date DATE DEFAULT CURRENT_DATE,
+            created_at TIMESTAMP DEFAULT NOW()
+        );
+        
+        -- Enable Row Level Security (optional but recommended)
+        ALTER TABLE compressions ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE submissions ENABLE ROW LEVEL SECURITY;
+        ALTER TABLE leaderboard ENABLE ROW LEVEL SECURITY;
+        
+        -- Create policies for public access (since we're not using auth)
+        CREATE POLICY "Enable read access for all users" ON compressions
+            FOR SELECT USING (true);
+        
+        CREATE POLICY "Enable insert for all users" ON compressions
+            FOR INSERT WITH CHECK (true);
+        
+        CREATE POLICY "Enable read access for all users" ON submissions
+            FOR SELECT USING (true);
+        
+        CREATE POLICY "Enable insert for all users" ON submissions
+            FOR INSERT WITH CHECK (true);
+        
+        CREATE POLICY "Enable update for all users" ON submissions
+            FOR UPDATE USING (true);
+        
+        CREATE POLICY "Enable all for leaderboard" ON leaderboard
+            FOR ALL USING (true);
+        
+        -- Create indexes for better performance
+        CREATE INDEX idx_compressions_created_at ON compressions(created_at DESC);
+        CREATE INDEX idx_submissions_tested ON submissions(tested);
+        CREATE INDEX idx_leaderboard_date ON leaderboard(date, tokens_saved DESC);
+        
+        ============================================
+        */
+        
+        // Configuration - Add your keys here
+        const CONFIG = {
+            SUPABASE_URL: 'YOUR_SUPABASE_URL',
+            SUPABASE_ANON_KEY: 'YOUR_SUPABASE_ANON_KEY',
+            DEEPSEEK_API_KEY: 'YOUR_DEEPSEEK_API_KEY',
+            GROQ_API_KEY: 'YOUR_GROQ_API_KEY'
+        };
+        
+        // Initialize Supabase
+        const supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        
+        // Global State
+        let currentCodex = {};
+        let currentHour = 1;
+        let articlesProcessedCount = 0;
+        let pendingCandidates = [];
+        
+        // Agent 1: Token Waste Detector (DeepSeek)
+        class TokenWasteDetector {
+            constructor() {
+                this.chatElement = document.getElementById('agent1-chat');
+            }
+            
+            async searchForArticle() {
+                const searchQueries = [
+                    'latest technology news 2024',
+                    'scientific research paper abstract',
+                    'cooking recipe instructions',
+                    'business strategy analysis',
+                    'creative writing excerpt',
+                    'medical journal findings',
+                    'travel blog post destination',
+                    'software documentation tutorial'
+                ];
+                
+                const query = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+                this.addMessage(`Searching for: "${query}"...`);
+                
+                // Using a free search API or web scraping service
+                // For demo, returning sample articles
+                return this.getFallbackArticle();
+            }
+            
+            getFallbackArticle() {
+                const articles = [
+                    `The implementation of quantum computing algorithms has revolutionized our understanding of computational complexity. Researchers are approximately certain that these developments will fundamentally transform how we process information. The customer database systems currently in use will need substantial modifications to accommodate these new paradigms. Unfortunately, many organizations are unprepared for this transition.`,
+                    
+                    `In the contemporary business environment, organizations must continuously adapt their strategies to remain competitive. The successful implementation of digital transformation initiatives requires comprehensive planning and meticulous execution. Companies that fail to recognize these imperatives risk becoming obsolete in an increasingly dynamic marketplace.`,
+                    
+                    `Scientific investigations have demonstrated that environmental factors significantly influence cognitive development. The correlation between early childhood experiences and adult psychological well-being has been extensively documented. These findings underscore the importance of creating supportive environments for optimal human development.`
+                ];
+                return articles[Math.floor(Math.random() * articles.length)];
+            }
+            
+            async analyzeArticle(article) {
+                this.addMessage(`Analyzing article for token waste...`);
+                
+                try {
+                    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.DEEPSEEK_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'deepseek-chat',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: 'You are analyzing text for multi-token words. List each word that likely uses 2+ tokens with estimated token count.'
+                                },
+                                {
+                                    role: 'user',
+                                    content: `Find multi-token words in: "${article.substring(0, 500)}". Format: word|tokens|frequency`
+                                }
+                            ],
+                            temperature: 0.3,
+                            max_tokens: 500
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('API call failed');
+                    const data = await response.json();
+                    return this.parseAnalysis(data.choices[0].message.content);
+                } catch (error) {
+                    console.error('DeepSeek error:', error);
+                    return this.simulateAnalysis();
+                }
+            }
+            
+            parseAnalysis(text) {
+                const words = [];
+                const lines = text.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes('|')) {
+                        const parts = line.split('|');
+                        if (parts.length >= 3) {
+                            words.push({
+                                word: parts[0].trim(),
+                                tokens: parseInt(parts[1]) || 2,
+                                frequency: parseInt(parts[2]) || 1
+                            });
+                        }
+                    }
+                }
+                
+                return words.length > 0 ? words : this.simulateAnalysis();
+            }
+            
+            simulateAnalysis() {
+                return [
+                    { word: 'approximately', tokens: 3, frequency: 4 },
+                    { word: 'implementation', tokens: 3, frequency: 2 },
+                    { word: 'customer', tokens: 2, frequency: 6 },
+                    { word: 'unfortunately', tokens: 3, frequency: 1 },
+                    { word: 'comprehensive', tokens: 3, frequency: 2 }
+                ];
+            }
+            
+            addMessage(content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message agent1';
+                messageDiv.innerHTML = `
+                    <div class="message-header">[Agent 1 - ${new Date().toLocaleTimeString()}]</div>
+                    <div>${content}</div>
+                `;
+                this.chatElement.appendChild(messageDiv);
+                this.chatElement.scrollTop = this.chatElement.scrollHeight;
+            }
+        }
+        
+        // Agent 2: Compression Inventor (Groq Llama)
+        class CompressionInventor {
+            constructor() {
+                this.chatElement = document.getElementById('agent2-chat');
+            }
+            
+            async createCompressions(wastefulWords, currentCodex) {
+                this.addMessage(`Creating compressions for ${wastefulWords.length} words...`);
+                
+                const wordList = wastefulWords.map(w => `${w.word} (${w.tokens} tokens)`).join(', ');
+                
+                try {
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${CONFIG.GROQ_API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            model: 'llama3-8b-8192',
+                            messages: [
+                                {
+                                    role: 'system',
+                                    content: 'Create unique, reversible compressions using symbols like ~, ≈, •, etc.'
+                                },
+                                {
+                                    role: 'user',
+                                    content: `Compress these words: ${wordList}. Format: original|compressed`
+                                }
+                            ],
+                            temperature: 0.7,
+                            max_tokens: 500
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('API call failed');
+                    const data = await response.json();
+                    return this.parseSuggestions(data.choices[0].message.content);
+                } catch (error) {
+                    console.error('Groq error:', error);
+                    return this.simulateSuggestions(wastefulWords);
+                }
+            }
+            
+            parseSuggestions(text) {
+                const compressions = [];
+                const lines = text.split('\n');
+                
+                for (const line of lines) {
+                    if (line.includes('|')) {
+                        const parts = line.split('|');
+                        if (parts.length >= 2) {
+                            compressions.push({
+                                original: parts[0].trim(),
+                                compressed: parts[1].trim()
+                            });
+                        }
+                    }
+                }
+                
+                return compressions.length > 0 ? compressions : this.simulateSuggestions([]);
+            }
+            
+            simulateSuggestions(wastefulWords) {
+                const prefixes = ['~', '≈', '•', '◊', '∿', '†'];
+                return wastefulWords.map(w => ({
+                    original: w.word,
+                    compressed: prefixes[Math.floor(Math.random() * prefixes.length)] + w.word.substring(0, 3)
+                }));
+            }
+            
+            addMessage(content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message agent2';
+                messageDiv.innerHTML = `
+                    <div class="message-header">[Agent 2 - ${new Date().toLocaleTimeString()}]</div>
+                    <div>${content}</div>
+                `;
+                this.chatElement.appendChild(messageDiv);
+                this.chatElement.scrollTop = this.chatElement.scrollHeight;
+            }
+        }
+        
+        // Testing Agent
+        class TestingAgent {
+            constructor() {
+                this.resultsElement = document.getElementById('test-results');
+            }
+            
+            async testCompressions(candidates) {
+                this.resultsElement.innerHTML = '<div class="result-item">🔬 Testing ceremony in progress...</div>';
+                
+                const results = [];
+                const testCorpus = [
+                    "The implementation was approximately correct.",
+                    "Unfortunately, the customer database needs updating.",
+                    "Please provide comprehensive analysis."
+                ];
+                
+                for (const candidate of candidates) {
+                    const isValid = this.testReversibility(candidate, testCorpus);
+                    results.push({
+                        ...candidate,
+                        valid: isValid
+                    });
+                }
+                
+                this.displayResults(results);
+                return results.filter(r => r.valid);
+            }
+            
+            testReversibility(candidate, testCorpus) {
+                for (const text of testCorpus) {
+                    const compressed = text.replace(
+                        new RegExp(candidate.original, 'g'),
+                        candidate.compressed
+                    );
+                    const expanded = compressed.replace(
+                        new RegExp(candidate.compressed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'),
+                        candidate.original
+                    );
+                    
+                    if (expanded !== text) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            
+            displayResults(results) {
+                this.resultsElement.innerHTML = '';
+                
+                const validCount = results.filter(r => r.valid).length;
+                const header = document.createElement('div');
+                header.className = 'result-item';
+                header.innerHTML = `✅ Testing complete! ${validCount}/${results.length} compressions accepted`;
+                this.resultsElement.appendChild(header);
+                
+                results.forEach(result => {
+                    const div = document.createElement('div');
+                    div.className = `result-item ${result.valid ? 'success' : 'failure'}`;
+                    const icon = result.valid ? '✅' : '❌';
+                    div.innerHTML = `${icon} "${result.original}" → "${result.compressed}" (${result.source || 'AI'})`;
+                    this.resultsElement.appendChild(div);
+                });
+            }
+        }
+        
+        // Discovery Orchestrator
+        class DiscoveryOrchestrator {
+            constructor() {
+                this.agent1 = new TokenWasteDetector();
+                this.agent2 = new CompressionInventor();
+                this.testingAgent = new TestingAgent();
+                this.isRunning = false;
+            }
+            
+            async runDiscoveryConversation() {
+                const article = await this.agent1.searchForArticle();
+                articlesProcessedCount++;
+                document.getElementById('articles-processed').textContent = articlesProcessedCount;
+                
+                // Collaborative conversation
+                for (let turn = 0; turn < 10; turn++) {
+                    if (turn % 2 === 0) {
+                        const wastefulWords = await this.agent1.analyzeArticle(article);
+                        this.agent1.addMessage(`Found ${wastefulWords.length} wasteful words`);
+                        
+                        const compressions = await this.agent2.createCompressions(wastefulWords, currentCodex);
+                        
+                        compressions.forEach(c => {
+                            c.source = 'AI';
+                            pendingCandidates.push(c);
+                        });
+                        
+                        // Collaborative discussion
+                        if (turn < 8) {
+                            this.agent2.addMessage(`What about patterns? All -tion words waste tokens...`);
+                            this.agent1.addMessage(`Good point! Let me check for suffix patterns...`);
+                        }
+                    }
+                    
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+            }
+            
+            async runHourlyTestingCeremony() {
+                const allCandidates = [...pendingCandidates];
+                
+                // Get human submissions
+                const humanSubmissions = await this.getHumanSubmissions();
+                humanSubmissions.forEach(s => {
+                    allCandidates.push({
+                        original: s.original,
+                        compressed: s.compressed,
+                        source: `Human: ${s.name}`
+                    });
+                });
+                
+                // Test all
+                const validCompressions = await this.testingAgent.testCompressions(allCandidates);
+                
+                // Update codex
+                for (const compression of validCompressions) {
+                    currentCodex[compression.original] = compression.compressed;
+                    await this.saveToSupabase(compression);
+                }
+                
+                document.getElementById('codex-size').textContent = Object.keys(currentCodex).length;
+                pendingCandidates = [];
+                
+                this.updateTimeline(validCompressions);
+                await this.updateLeaderboard();
+            }
+            
+            async getHumanSubmissions() {
+                try {
+                    const { data, error } = await supabase
+                        .from('submissions')
+                        .select('*')
+                        .eq('tested', false);
+                    
+                    if (data && data.length > 0) {
+                        await supabase
+                            .from('submissions')
+                            .update({ tested: true })
+                            .in('id', data.map(s => s.id));
+                    }
+                    
+                    return data || [];
+                } catch (error) {
+                    console.error('Error fetching submissions:', error);
+                    return [];
+                }
+            }
+            
+            async saveToSupabase(compression) {
+                try {
+                    await supabase
+                        .from('compressions')
+                        .insert({
+                            original: compression.original,
+                            compressed: compression.compressed,
+                            source: compression.source,
+                            hour: currentHour,
+                            tokens_saved: this.calculateTokenSavings(compression),
+                            created_at: new Date().toISOString()
+                        });
+                } catch (error) {
+                    console.error('Error saving compression:', error);
+                }
+            }
+            
+            calculateTokenSavings(compression) {
+                const originalTokens = Math.ceil(compression.original.length / 4);
+                const compressedTokens = Math.ceil(compression.compressed.length / 4);
+                const savedPerUse = originalTokens - compressedTokens;
+                const estimatedDailyUses = Math.floor(Math.random() * 5000) + 1000;
+                return savedPerUse * estimatedDailyUses;
+            }
+            
+            updateTimeline(validCompressions) {
+                const timeline = document.getElementById('timeline-content');
+                
+                validCompressions.forEach(compression => {
+                    const item = document.createElement('div');
+                    item.className = 'timeline-item';
+                    
+                    item.innerHTML = `
+                        <div class="timeline-time">Hour ${currentHour} - ${new Date().toLocaleTimeString()}</div>
+                        <div class="timeline-content">"${compression.original}" → "${compression.compressed}" by ${compression.source}</div>
+                        <div class="timeline-savings">Saves ${this.calculateTokenSavings(compression)} tokens/day</div>
+                    `;
+                    
+                    timeline.insertBefore(item, timeline.firstChild);
+                    
+                    // Keep only last 20 items
+                    while (timeline.children.length > 20) {
+                        timeline.removeChild(timeline.lastChild);
+                    }
+                });
+            }
+            
+            async updateLeaderboard() {
+                try {
+                    const { data } = await supabase
+                        .from('leaderboard')
+                        .select('*')
+                        .order('tokens_saved', { ascending: false })
+                        .limit(10);
+                    
+                    const tbody = document.getElementById('leaderboard-body');
+                    tbody.innerHTML = '';
+                    
+                    if (data && data.length > 0) {
+                        data.forEach((entry, index) => {
+                            const row = tbody.insertRow();
+                            row.innerHTML = `
+                                <td class="rank-${index + 1}">#${index + 1}</td>
+                                <td>${entry.name}</td>
+                                <td>${entry.compressions_count}</td>
+                                <td>${entry.tokens_saved.toLocaleString()}</td>
+                            `;
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error updating leaderboard:', error);
+                }
+            }
+        }
+        
+        // Initialize
+        const orchestrator = new DiscoveryOrchestrator();
+        
+        // Form submission
+        document.getElementById('submission-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            try {
+                await supabase.from('submissions').insert({
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    original: formData.get('original'),
+                    compressed: formData.get('compressed'),
+                    daily_updates: document.getElementById('daily-updates').checked,
+                    tested: false
+                });
+                
+                alert('Compression submitted! Results at next testing ceremony.');
+                e.target.reset();
+            } catch (error) {
+                alert('Error submitting. Please try again.');
+            }
+        });
+        
+        // Countdown timer
+        function updateCountdown() {
+            const now = new Date();
+            const minutes = 59 - now.getMinutes();
+            const seconds = 59 - now.getSeconds();
+            
+            const countdownText = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('countdown').textContent = `Next test in: ${countdownText}`;
+            document.getElementById('marquee-countdown').textContent = countdownText;
+            
+            // Leaderboard reset
+            const hoursUntilMidnight = 23 - now.getHours();
+            const leaderboardReset = `${hoursUntilMidnight}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            document.getElementById('leaderboard-reset').textContent = leaderboardReset;
+            
+            // Testing ceremony
+            if (minutes === 0 && seconds < 5) {
+                if (!orchestrator.isRunning) {
+                    orchestrator.isRunning = true;
+                    orchestrator.runHourlyTestingCeremony().then(() => {
+                        orchestrator.isRunning = false;
+                        currentHour++;
+                        document.getElementById('current-hour').textContent = currentHour;
+                    });
+                }
+            }
+        }
+        
+        setInterval(updateCountdown, 1000);
+        
+        // Continuous discovery
+        async function continuousDiscovery() {
+            while (true) {
+                const now = new Date();
+                if (now.getMinutes() < 55) {
+                    await orchestrator.runDiscoveryConversation();
+                }
+                await new Promise(resolve => setTimeout(resolve, 30000));
+            }
+        }
+        
+        // Start
+        continuousDiscovery();
+        updateCountdown();
+        
+        // Load initial stats
+        async function loadStats() {
+            try {
+                const { data: compressions } = await supabase
+                    .from('compressions')
+                    .select('*');
+                
+                if (compressions) {
+                    compressions.forEach(c => {
+                        currentCodex[c.original] = c.compressed;
+                    });
+                    document.getElementById('codex-size').textContent = Object.keys(currentCodex).length;
+                }
+                
+                // Load stats
+                const { data: stats } = await supabase
+                    .from('stats')
+                    .select('*');
+                
+                if (stats) {
+                    stats.forEach(stat => {
+                        if (stat.metric_name === 'total_tokens_saved') {
+                            document.getElementById('total-savings').textContent = stat.metric_value.toLocaleString();
+                        }
+                        if (stat.metric_name === 'current_hour') {
+                            currentHour = stat.metric_value;
+                            document.getElementById('current-hour').textContent = currentHour;
+                        }
+                    });
+                }
+                
+                // Load active users count
+                const { count } = await supabase
+                    .from('submissions')
+                    .select('*', { count: 'exact', head: true });
+                
+                document.getElementById('active-users').textContent = count || 0;
+                
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        loadStats();
+        
+        // Refresh leaderboard every minute
+        setInterval(() => {
+            orchestrator.updateLeaderboard();
+        }, 60000);
+        
+        // Save current hour to database periodically
+        setInterval(async () => {
+            try {
+                await supabase
+                    .from('stats')
+                    .update({ metric_value: currentHour, updated_at: new Date().toISOString() })
+                    .eq('metric_name', 'current_hour');
+            } catch (error) {
+                console.error('Error updating hour:', error);
+            }
+        }, 300000); // Every 5 minutes
+        
+        // Initial demo messages for visual interest
+        setTimeout(() => {
+            orchestrator.agent1.addMessage("Searching for article about 'quantum computing advances'...");
+        }, 2000);
+        
+        setTimeout(() => {
+            orchestrator.agent1.addMessage("Found article! Analyzing for token waste...");
+            orchestrator.agent1.addMessage("'implementation' appears 8 times, uses 3 tokens each");
+        }, 4000);
+        
+        setTimeout(() => {
+            orchestrator.agent2.addMessage("Interesting! Let's try '~impl' as compression");
+            orchestrator.agent2.addMessage("That saves 2 tokens per use = 16 tokens in this article alone");
+        }, 6000);
+        
+        setTimeout(() => {
+            orchestrator.agent1.addMessage("Good idea! Also seeing 'approximately' (3 tokens) frequently");
+            orchestrator.agent2.addMessage("Mathematical symbol '≈' would be perfect - just 1 token!");
+        }, 8000);
+        
+        setTimeout(() => {
+            orchestrator.agent1.addMessage("Let me check for related words like 'approximation'...");
+            orchestrator.agent2.addMessage("We could use a family: ≈, ≈n, ≈ing, ≈ed for consistency");
+        }, 10000);
+        
+        // Web search functionality for Agent 1
+        TokenWasteDetector.prototype.searchForArticle = async function() {
+            const searchQueries = [
+                'latest artificial intelligence research 2024',
+                'quantum computing breakthrough news',
+                'climate change scientific paper abstract',
+                'software engineering best practices',
+                'medical research journal findings',
+                'business strategy analysis report',
+                'machine learning algorithm explanation',
+                'cryptocurrency technology updates',
+                'space exploration discoveries',
+                'renewable energy innovations'
+            ];
+            
+            const query = searchQueries[Math.floor(Math.random() * searchQueries.length)];
+            this.addMessage(`Searching web for: "${query}"...`);
+            
+            // In production, integrate with a real search API like:
+            // - Brave Search API
+            // - SerpAPI
+            // - Google Custom Search
+            // - Bing Search API
+            
+            // For now, return diverse sample content
+            const articles = [
+                {
+                    type: 'research',
+                    content: `Recent investigations into quantum entanglement have demonstrated unprecedented levels of coherence in superconducting qubits. The implementation of error correction algorithms has shown approximately 99.9% fidelity in controlled environments. Unfortunately, scaling these systems remains challenging due to decoherence effects. Researchers emphasize that comprehensive understanding of quantum mechanics is essential for advancing this technology. The correlation between temperature and qubit stability has been extensively documented in multiple peer-reviewed publications.`
+                },
+                {
+                    type: 'news',
+                    content: `Technology companies are increasingly investing in artificial intelligence infrastructure. The implementation of large language models requires substantial computational resources. Organizations are approximately doubling their AI budgets annually. Customer experience improvements through AI have become a primary focus. Unfortunately, many businesses lack the comprehensive expertise needed for successful deployment. The transformation of traditional industries through AI adoption continues to accelerate at an unprecedented pace.`
+                },
+                {
+                    type: 'technical',
+                    content: `Software architecture patterns have evolved significantly with microservices adoption. The implementation of containerized applications provides flexibility and scalability. Development teams are approximately 40% more productive with modern DevOps practices. Customer requirements drive continuous integration and deployment strategies. Comprehensive testing frameworks ensure code quality and reliability. Unfortunately, technical debt accumulates without proper refactoring practices. Documentation remains essential for maintaining complex distributed systems.`
+                },
+                {
+                    type: 'business',
+                    content: `Strategic planning in volatile markets requires adaptive methodologies. The implementation of agile business practices enables rapid response to change. Companies are approximately three times more likely to succeed with data-driven decision making. Customer retention strategies focus on personalization and engagement. Comprehensive market analysis reveals emerging opportunities and threats. Unfortunately, organizational inertia often impedes necessary transformations. Leadership commitment remains fundamental to successful change initiatives.`
+                }
+            ];
+            
+            const selected = articles[Math.floor(Math.random() * articles.length)];
+            
+            // Track in database
+            try {
+                await supabase
+                    .from('articles')
+                    .insert({
+                        source_type: selected.type,
+                        content: selected.content,
+                        url: `https://example.com/${selected.type}/${Date.now()}`,
+                        words_found: 0,
+                        compressions_created: 0
+                    });
+                
+                // Update stats
+                await supabase
+                    .from('stats')
+                    .update({ 
+                        metric_value: articlesProcessedCount + 1,
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('metric_name', 'total_articles_processed');
+                    
+            } catch (error) {
+                console.error('Error tracking article:', error);
+            }
+            
+            return selected.content;
+        };
+        
+        // Enhanced testing with actual corpus
+        TestingAgent.prototype.getTestCorpus = function() {
+            // Diverse test sentences to ensure compressions work across contexts
+            return [
+                // Technical
+                "The implementation of the algorithm was approximately correct.",
+                "Unfortunately, the customer database requires immediate attention.",
+                "Comprehensive analysis reveals significant opportunities.",
+                
+                // Business
+                "Customer satisfaction increased by approximately 50 percent.",
+                "The implementation phase begins next quarter.",
+                "Unfortunately, market conditions remain challenging.",
+                
+                // Casual
+                "It's approximately five miles from here.",
+                "The customer service was exceptional.",
+                "Implementation details will follow shortly.",
+                
+                // Academic
+                "Research demonstrates approximately linear correlation.",
+                "Comprehensive studies support this hypothesis.",
+                "Unfortunately, previous attempts failed.",
+                
+                // Mixed context
+                "The comprehensive implementation guide helps customers understand approximately how the system works, but unfortunately some details remain unclear."
+            ];
+        };
+        
+        // Enhanced leaderboard with animations
+        DiscoveryOrchestrator.prototype.updateLeaderboard = async function() {
+            try {
+                const { data } = await supabase
+                    .from('leaderboard')
+                    .select('*')
+                    .eq('date', new Date().toISOString().split('T')[0])
+                    .order('tokens_saved', { ascending: false })
+                    .limit(10);
+                
+                const tbody = document.getElementById('leaderboard-body');
+                
+                if (data && data.length > 0) {
+                    // Clear existing
+                    tbody.innerHTML = '';
+                    
+                    data.forEach((entry, index) => {
+                        const row = tbody.insertRow();
+                        const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                        
+                        row.innerHTML = `
+                            <td class="${rankClass}">#${index + 1}</td>
+                            <td>${entry.name}</td>
+                            <td>${entry.compressions_count}</td>
+                            <td>${entry.tokens_saved.toLocaleString()}</td>
+                        `;
+                        
+                        // Add animation for new entries
+                        row.style.animation = 'fadeIn 0.5s ease-in';
+                    });
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No entries yet today!</td></tr>';
+                }
+            } catch (error) {
+                console.error('Error updating leaderboard:', error);
+            }
+        };
+        
+        // Add fadeIn animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+        
+        // Twitter bot functionality (for future integration)
+        async function tweetDiscovery(compression) {
+            const tweet = `🎉 New compression discovered!
+"${compression.original}" → "${compression.compressed}"
+Saves ${compression.tokens_saved} tokens/day
+Source: ${compression.source}
+
+Submit your ideas: tokencompressor.ai
+#TokenCompressor #AI #Efficiency`;
+            
+            console.log('Tweet ready:', tweet);
+            // In production: call Twitter API
+        }
+        
+        // Email notification system (for future integration)
+        async function sendDailyDigest() {
+            try {
+                // Get users who opted in
+                const { data: users } = await supabase
+                    .from('submissions')
+                    .select('email, name')
+                    .eq('daily_updates', true)
+                    .limit(1000);
+                
+                // Get today's discoveries
+                const { data: discoveries } = await supabase
+                    .from('compressions')
+                    .select('*')
+                    .gte('created_at', new Date().toISOString().split('T')[0])
+                    .order('tokens_saved', { ascending: false })
+                    .limit(10);
+                
+                if (users && discoveries) {
+                    console.log(`Would send digest to ${users.length} users with ${discoveries.length} discoveries`);
+                    // In production: integrate with SendGrid, Mailgun, etc.
+                }
+            } catch (error) {
+                console.error('Error preparing digest:', error);
+            }
+        }
+        
+        // Schedule daily digest (runs at midnight)
+        function checkForMidnight() {
+            const now = new Date();
+            if (now.getHours() === 0 && now.getMinutes() === 0) {
+                sendDailyDigest();
+                // Reset daily stats
+                orchestrator.updateLeaderboard();
+            }
+        }
+        setInterval(checkForMidnight, 60000);
+        
+        // Export codex functionality
+        window.exportCodex = async function() {
+            const codexArray = Object.entries(currentCodex).map(([original, compressed]) => ({
+                original,
+                compressed,
+                ratio: (1 - compressed.length / original.length).toFixed(2)
+            }));
+            
+            const json = JSON.stringify(codexArray, null, 2);
+            const blob = new Blob([json], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `token-compressor-codex-${new Date().toISOString().split('T')[0]}.json`;
+            a.click();
+        };
+        
+        // Add export button to footer
+        const footer = document.querySelector('footer');
+        const exportBtn = document.createElement('button');
+        exportBtn.className = 'submit-btn';
+        exportBtn.style.marginTop = '20px';
+        exportBtn.textContent = 'Export Codex JSON';
+        exportBtn.onclick = window.exportCodex;
+        footer.appendChild(exportBtn);
+        
+        // Performance monitoring
+        let apiCallCount = 0;
+        let apiCallCosts = 0;
+        
+        function trackAPICall(service, tokens) {
+            apiCallCount++;
+            const costs = {
+                'deepseek': 0.00014 * (tokens / 1000000),
+                'groq': 0.00010 * (tokens / 1000000)
+            };
+            apiCallCosts += costs[service] || 0;
+            
+            // Log every 100 calls
+            if (apiCallCount % 100 === 0) {
+                console.log(`API Calls: ${apiCallCount}, Estimated cost: ${apiCallCosts.toFixed(4)}`);
+            }
+        }
+        
+        // Error handling and recovery
+        window.addEventListener('unhandledrejection', event => {
+            console.error('Unhandled promise rejection:', event.reason);
+            // Continue running despite errors
+            event.preventDefault();
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            // Ctrl+E to export codex
+            if (e.ctrlKey && e.key === 'e') {
+                e.preventDefault();
+                window.exportCodex();
+            }
+            // Ctrl+S to focus submission form
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                document.getElementById('original-word').focus();
+            }
+        });
+        
+        // Mobile responsiveness check
+        function checkMobile() {
+            if (window.innerWidth < 768) {
+                document.querySelector('.main-content').style.gridTemplateColumns = '1fr';
+            } else {
+                document.querySelector('.main-content').style.gridTemplateColumns = '1fr 1fr';
+            }
+        }
+        window.addEventListener('resize', checkMobile);
+        checkMobile();
+        
+        // Final initialization message
+        console.log('%c🚀 Token Compressor Initialized!', 'color: #9cA971; font-size: 20px; font-weight: bold;');
+        console.log('%cAI agents are discovering compressions...', 'color: #c4cfa1; font-size: 14px;');
+        console.log('%cSubmit your ideas to beat the AI!', 'color: #8b956d; font-size: 14px;');
+        
+    </script>
+</body>
+</html>

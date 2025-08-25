@@ -1,0 +1,39 @@
+{
+  "name": "token-compressor",
+  "version": "1.0.0",
+  "description": "AI agent discovery laboratory for token-efficient text compressions",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node local-server.js",
+    "dev:simple": "python3 -m http.server 3000 --directory public",
+    "vercel:dev": "vercel dev",
+    "build": "echo 'Static site - no build needed'",
+    "start": "node local-server.js",
+    "deploy": "vercel --prod",
+    "test": "node --experimental-modules test/unit-tests.js",
+    "test:integration": "node --experimental-modules test/integration-tests.js",
+    "test:all": "npm run test && npm run test:integration"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^17.2.1",
+    "node-fetch": "^3.3.2",
+    "tiktoken": "^1.0.10"
+  },
+  "devDependencies": {
+    "@vercel/node": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "token-compression",
+    "agents",
+    "discovery",
+    "api-optimization"
+  ],
+  "author": "Token Compressor Lab",
+  "license": "MIT"
+}

@@ -1,0 +1,243 @@
+/* Animation Styles */
+
+/* Title Blink Animation */
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+h1 {
+    animation: blink 2s infinite;
+}
+
+/* Agent Status Pulse */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.agent-status {
+    animation: pulse 2s infinite;
+}
+
+.agent-status.active {
+    background: var(--gameboy-highlight);
+}
+
+.agent-status.idle {
+    background: var(--gameboy-bg-primary);
+}
+
+.agent-status.error {
+    background: #8b5a3c;
+}
+
+/* Marquee Scroll Animation */
+@keyframes scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.marquee-content {
+    animation: scroll 30s linear infinite;
+}
+
+.marquee-content:hover {
+    animation-play-state: paused;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid var(--gameboy-text-light);
+    border-top: 4px solid var(--gameboy-highlight);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+/* Message Slide In */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.message {
+    animation: slideIn 0.3s ease-in;
+}
+
+/* Timeline Item Fade In */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.timeline-item {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Leaderboard Row Animation */
+.leaderboard-table tr {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* Button Press Animation */
+.submit-btn:active {
+    animation: buttonPress 0.1s ease-in-out;
+}
+
+@keyframes buttonPress {
+    0% { transform: translate(0, 0); }
+    50% { transform: translate(2px, 2px); }
+    100% { transform: translate(4px, 4px); }
+}
+
+/* Testing Ceremony Flash */
+@keyframes ceremonySpark {
+    0%, 100% { 
+        background: var(--gameboy-border);
+        transform: scale(1);
+    }
+    50% { 
+        background: var(--gameboy-highlight);
+        transform: scale(1.02);
+    }
+}
+
+.testing-zone.ceremony-active {
+    animation: ceremonySpark 2s ease-in-out infinite;
+}
+
+/* Discovery Cycle Indicator */
+@keyframes discoveryPulse {
+    0%, 100% { 
+        box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-border);
+    }
+    50% { 
+        box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-highlight),
+                    0 0 10px var(--gameboy-highlight);
+    }
+}
+
+.agent-window.discovery-active {
+    animation: discoveryPulse 3s ease-in-out infinite;
+}
+
+/* Stats Counter Animation */
+@keyframes countUp {
+    from { transform: scale(1); }
+    to { transform: scale(1.1); }
+}
+
+.stat-value.updated {
+    animation: countUp 0.3s ease-in-out;
+}
+
+/* Error Shake Animation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.form-group.error input {
+    animation: shake 0.5s ease-in-out;
+    border-color: #8b5a3c;
+    background-color: #f5e6e6;
+}
+
+/* Success Glow Animation */
+@keyframes successGlow {
+    0%, 100% { 
+        box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-border);
+    }
+    50% { 
+        box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-border),
+                    0 0 15px var(--gameboy-highlight);
+    }
+}
+
+.submission-area.success {
+    animation: successGlow 2s ease-in-out 3;
+}
+
+/* Typing Indicator */
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+}
+
+.typing-indicator {
+    display: inline-flex;
+    gap: 2px;
+}
+
+.typing-indicator span {
+    width: 4px;
+    height: 4px;
+    background: var(--gameboy-text-dark);
+    border-radius: 50%;
+    animation: typing 1.5s infinite;
+}
+
+.typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+/* Hover Effects */
+.agent-window:hover {
+    transform: translateY(-2px);
+    transition: transform 0.2s ease;
+}
+
+.timeline-item:hover {
+    background: rgba(156, 169, 113, 0.1);
+    transition: background 0.2s ease;
+}
+
+/* Focus Animations */
+input:focus {
+    animation: focusPulse 0.3s ease-in-out;
+}
+
+@keyframes focusPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    
+    .marquee-content {
+        animation: none;
+        transform: translateX(0);
+    }
+}
