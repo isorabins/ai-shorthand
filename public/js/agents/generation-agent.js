@@ -50,7 +50,7 @@ window.TokenCompressor.GenerationAgent = class GenerationAgent {
     
     /**
      * Generate compressions for wasteful words with creative thinking
-     * Following Claude best practices: XML structure, detailed tool descriptions, extended thinking
+     * ENHANCED: Load full agent context including 686 existing compressions
      */
     async generateCompressions(wastefulWords, existingCodex = {}) {
         if (!wastefulWords || wastefulWords.length === 0) {
@@ -60,26 +60,75 @@ window.TokenCompressor.GenerationAgent = class GenerationAgent {
         
         this.updateStatus('thinking');
         this.addMessage(`🎨 Received ${wastefulWords.length} words for compression...`);
-        this.addMessage('💭 Analyzing patterns and existing codex...');
+        this.addMessage('🧠 Loading agent context from learning system...');
         
         try {
-            // Update current codex knowledge
-            this.currentCodex = new Map(Object.entries(existingCodex));
+            // PHASE 4: Load comprehensive agent context (prevents repeating work!)
+            const agentContext = await this.loadAgentContext();
+            
+            this.addMessage(`📚 Loaded ${Object.keys(agentContext.existingCompressions).length} existing compressions`);
+            this.addMessage(`🎯 Found ${Object.keys(agentContext.learningPatterns).length} successful patterns`);
+            this.addMessage(`❌ Avoiding ${agentContext.recentFailures.length} recent failures`);
+            
+            // Update current codex knowledge with comprehensive context
+            this.currentCodex = new Map(Object.entries({
+                ...existingCodex,
+                ...agentContext.existingCompressions
+            }));
+            this.agentContext = agentContext;
+            
+            // Filter out words that already have compressions (avoid duplicate work!)
+            const newWords = wastefulWords.filter(word => 
+                !this.currentCodex.has(word.word.toLowerCase()) && 
+                !agentContext.existingCompressions[word.word.toLowerCase()]
+            );
+            
+            if (newWords.length < wastefulWords.length) {
+                const filtered = wastefulWords.length - newWords.length;
+                this.addMessage(`⚡ Filtered out ${filtered} words that already have compressions`);
+            }
+            
+            if (newWords.length === 0) {
+                this.addMessage('✅ All words already have compressions! No new work needed.');
+                return { compressions: [] };
+            }
+            
+            this.addMessage(`🎯 Processing ${newWords.length} new words for compression...`);
             
             // Create comprehensive prompt following best practices
-            const compressionResult = await this.performCreativeGeneration(wastefulWords);
+            const compressionResult = await this.performCreativeGeneration(newWords);
             
             if (compressionResult.compressions.length > 0) {
-                this.addMessage(`✨ Generated ${compressionResult.compressions.length} creative compressions!`);
+                // PHASE 5: Show transparent processing with accurate totals
+                this.addMessage(`📊 PROCESSING COMPLETE: Analyzed ${newWords.length} words, generated ${compressionResult.compressions.length} compression attempts`);
                 
-                // Show generated compressions
-                compressionResult.compressions.slice(0, 3).forEach(comp => {
-                    this.addMessage(`  🔸 "${comp.original}" → "${comp.compressed}" (${comp.reasoning || 'creative choice'})`);
+                // Show detailed discussion for 2-3 representative compressions (as specified in final plan)
+                const representative = compressionResult.compressions.slice(0, 3);
+                this.addMessage(`🔍 DETAILED ANALYSIS (showing ${representative.length} representative examples):`);
+                representative.forEach((comp, index) => {
+                    this.addMessage(`  ${index + 1}. "${comp.original}" → "${comp.compressed}" (saves ~${comp.tokensSaved || 2} tokens)`);
+                    this.addMessage(`     💭 Reasoning: ${comp.reasoning || 'Creative pattern-based choice'}`);
                 });
+                
+                // Show summary of ALL work done
+                if (compressionResult.compressions.length > 3) {
+                    const remaining = compressionResult.compressions.length - 3;
+                    this.addMessage(`📋 Plus ${remaining} additional compressions generated (total: ${compressionResult.compressions.length})`);
+                }
+                
+                // Show breakdown by categories if available
+                const patterns = this.categorizeCompressions(compressionResult.compressions);
+                if (patterns && Object.keys(patterns).length > 1) {
+                    const patternSummary = Object.entries(patterns)
+                        .map(([pattern, count]) => `${pattern}: ${count}`)
+                        .join(', ');
+                    this.addMessage(`🎯 Pattern distribution: ${patternSummary}`);
+                }
                 
                 this.compressionHistory.push(...compressionResult.compressions);
             } else {
-                this.addMessage('😔 Unable to generate suitable compressions for these words');
+                this.addMessage(`📊 PROCESSING COMPLETE: Analyzed ${newWords.length} words, generated 0 suitable compressions`);
+                this.addMessage('💡 All words may already exist or not meet compression criteria');
             }
             
             this.updateStatus('idle');
@@ -93,8 +142,48 @@ window.TokenCompressor.GenerationAgent = class GenerationAgent {
     }
     
     /**
+     * Load comprehensive agent context from learning system - PHASE 4 KEY METHOD
+     * This prevents agents from repeating work and makes them smarter!
+     */
+    async loadAgentContext() {
+        try {
+            // Get comprehensive context from learning system
+            if (window.TokenCompressor.learningSystem) {
+                const context = await window.TokenCompressor.learningSystem.getAgentContext();
+                
+                // Add filtering for words we're about to process (don't repeat work)
+                const filteredContext = {
+                    ...context,
+                    existingCompressions: context.existingCompressions || {},
+                    learningPatterns: context.learningPatterns || {},
+                    recentFailures: context.recentFailures || [],
+                    totalTokensSaved: context.totalTokensSaved || 0
+                };
+                
+                return filteredContext;
+            } else {
+                console.warn('Learning system not available, using basic context');
+                return {
+                    existingCompressions: {},
+                    learningPatterns: {},
+                    recentFailures: [],
+                    totalTokensSaved: 0
+                };
+            }
+        } catch (error) {
+            console.error('Failed to load agent context:', error);
+            return {
+                existingCompressions: {},
+                learningPatterns: {},
+                recentFailures: [],
+                totalTokensSaved: 0
+            };
+        }
+    }
+    
+    /**
      * Perform creative compression generation with structured thinking
-     * Following Claude best practices: XML prompts, extended thinking, detailed instructions
+     * ENHANCED: Uses agent context to avoid duplicates and build on patterns
      */
     async performCreativeGeneration(wastefulWords) {
         const systemPrompt = this.buildSystemPrompt();
@@ -232,7 +321,7 @@ For each word, provide:
     }
     
     /**
-     * Build detailed user prompt with thinking instructions
+     * Build detailed user prompt with thinking instructions - ENHANCED with agent context
      */
     buildCreativeGenerationPrompt(wastefulWords) {
         const existingCompressions = Array.from(this.currentCodex.entries())
@@ -242,14 +331,45 @@ For each word, provide:
         const wordList = wastefulWords
             .map(w => `"${w.word}" (${w.tokens} tokens, frequency: ${w.frequency})`)
             .join('\n');
+
+        // PHASE 4 ENHANCEMENT: Include learning patterns and failed attempts
+        let learningContext = '';
+        let failureAvoidance = '';
+        
+        if (this.agentContext) {
+            // Include successful patterns
+            const patterns = Object.entries(this.agentContext.learningPatterns)
+                .map(([type, data]) => `${type}: ${(data.successRate * 100).toFixed(1)}% success rate (${data.examples?.map(ex => `"${ex.original}" → "${ex.compressed}"`).join(', ')})`)
+                .join('\n');
+            
+            if (patterns) {
+                learningContext = `<successful_patterns>
+${patterns}
+</successful_patterns>`;
+            }
+            
+            // Include recent failures to avoid
+            const failures = this.agentContext.recentFailures
+                .map(f => `"${f.original}" → "${f.attempted}" (failed: ${f.reason})`)
+                .join('\n');
+            
+            if (failures) {
+                failureAvoidance = `<recent_failures_to_avoid>
+${failures}
+</recent_failures_to_avoid>`;
+            }
+        }
         
         return `<thinking>
 Think hard about creating the most effective compressions for these words. Consider:
 1. What symbols or abbreviations would be most intuitive?
 2. How can I ensure these compress to exactly 1 token?
-3. What patterns would be memorable and systematic?
-4. How do these relate to existing compressions?
-5. What would maximize adoption by developers?
+3. What patterns have worked before (based on learning data)?
+4. What recent failures should I avoid repeating?
+5. How do these relate to existing ${Object.keys(this.currentCodex).length} compressions?
+6. What would maximize adoption by developers?
+
+IMPORTANT: Don't repeat any existing compressions! We already have ${Object.keys(this.currentCodex).length} validated compressions.
 
 For each word, think through multiple options before selecting the best one.
 </thinking>
@@ -265,9 +385,15 @@ ${wordList}
 ${existingCompressions || 'No existing compressions yet - you\'re starting fresh!'}
 </existing_codex>
 
+${learningContext}
+
+${failureAvoidance}
+
 <requirements>
 - Each compression MUST result in exactly 1 token
-- Avoid conflicts with existing codex entries
+- NEVER duplicate existing codex entries (${Object.keys(this.currentCodex).length} already exist)
+- Build on successful patterns from learning data
+- Avoid patterns that recently failed
 - Prioritize intuitive, memorable symbols
 - Include detailed reasoning for each choice
 - Consider frequency and context of usage
@@ -460,6 +586,38 @@ Generate compressions using the specified XML format. Be creative and think thro
         });
         
         return { compressions };
+    }
+    
+    /**
+     * Categorize compressions by pattern for transparency reporting - PHASE 5
+     */
+    categorizeCompressions(compressions) {
+        const categories = {};
+        
+        compressions.forEach(comp => {
+            // Identify pattern type
+            let category = 'other';
+            
+            if (/^[∂∫∑∏ΔΩ]$/.test(comp.compressed)) {
+                category = 'mathematical_symbols';
+            } else if (/^[αβγδεθλμπρστφψω]$/.test(comp.compressed)) {
+                category = 'greek_letters';
+            } else if (/^[†‡§¶◊♦≈∴∵]$/.test(comp.compressed)) {
+                category = 'special_symbols';
+            } else if (/^[~@#$%^&*]/.test(comp.compressed)) {
+                category = 'symbol_prefix';
+            } else if (/^[A-Z]{2,4}$/.test(comp.compressed)) {
+                category = 'abbreviations';
+            } else if (comp.compressed.length === 1) {
+                category = 'single_character';
+            } else {
+                category = 'multi_character';
+            }
+            
+            categories[category] = (categories[category] || 0) + 1;
+        });
+        
+        return categories;
     }
     
     /**

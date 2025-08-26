@@ -37,7 +37,7 @@ export function validateInput(data, schema) {
     for (const [field, rules] of Object.entries(schema)) {
         const value = data[field];
         
-        if (rules.required && (!value || value.trim() === '')) {
+        if (rules.required && (!value || (typeof value === 'string' && value.trim() === ''))) {
             errors.push(`${field} is required`);
             continue;
         }

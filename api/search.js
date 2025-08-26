@@ -2,6 +2,8 @@
 import { rateLimit, validateInput, sanitizeInput, createErrorResponse, createSuccessResponse, corsHeaders } from './_middleware.js';
 
 export default async function handler(req, res) {
+    console.log('🌟 SEARCH API CALLED');
+    
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
         return res.status(200).json({});
@@ -19,6 +21,7 @@ export default async function handler(req, res) {
     
     try {
         const { query, domain } = req.body;
+        console.log('🔍 Search request:', { query, domain });
         
         // Validate input
         const validation = validateInput({ query }, {
@@ -31,28 +34,39 @@ export default async function handler(req, res) {
         
         // Sanitize input
         const sanitizedQuery = sanitizeInput(query);
-        const searchQuery = domain ? `${sanitizedQuery} ${domain}` : sanitizedQuery;
         
-        // Call Brave Search API
-        const response = await fetch('https://api.search.brave.com/res/v1/web/search', {
+        // TEMPORARILY DISABLE DOMAIN FILTERING TO TEST
+        const searchQuery = sanitizedQuery; // domain ? `${sanitizedQuery} ${domain}` : sanitizedQuery;
+        
+        // Call Brave Search API - Use minimal valid parameters
+        const searchParams = new URLSearchParams({
+            q: searchQuery,
+            count: 3
+        });
+        
+        const searchUrl = `https://api.search.brave.com/res/v1/web/search?${searchParams}`;
+        console.log('🔍 Brave Search URL:', searchUrl);
+        console.log('🔑 API Key present:', !!process.env.BRAVE_SEARCH_API_KEY);
+        
+        const response = await fetch(searchUrl, {
             method: 'GET',
             headers: {
                 'Accept': 'application/json',
                 'X-Subscription-Token': process.env.BRAVE_SEARCH_API_KEY
-            },
-            params: new URLSearchParams({
-                q: searchQuery,
-                count: 3,
-                offset: 0,
-                mkt: 'en-US',
-                safesearch: 'moderate',
-                textDecorations: false,
-                textFormat: 'Raw'
-            })
+            }
         });
         
+        console.log('🔍 Response status:', response.status);
+        
         if (!response.ok) {
-            throw new Error(`Brave Search API error: ${response.status}`);
+            const errorText = await response.text();
+            console.error('🚨 Brave Search Error:', {
+                status: response.status,
+                statusText: response.statusText,
+                headers: Object.fromEntries(response.headers.entries()),
+                body: errorText
+            });
+            throw new Error(`Brave Search API error: ${response.status} - ${errorText}`);
         }
         
         const data = await response.json();

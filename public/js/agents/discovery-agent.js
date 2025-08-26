@@ -38,6 +38,8 @@ window.TokenCompressor.DiscoveryAgent = class DiscoveryAgent {
         this.currentArticle = null;        // Currently analyzed article
         this.lastSearchTime = 0;           // When we last searched (rate limiting)
         this.searchTopicIndex = 0;         // Cycle through different topics
+        this.domainUsageCount = {};        // Track domain usage to avoid over-representation
+        this.lastUsedDomains = [];         // Recent domains to avoid repeating
         
         this.updateStatus('idle');
         console.log('🔍 Discovery Agent initialized');
@@ -104,20 +106,24 @@ window.TokenCompressor.DiscoveryAgent = class DiscoveryAgent {
     }
     
     /**
-     * Search for random article using Brave Search
+     * Search for random article using Brave Search with domain balancing
      */
     async searchForArticle() {
         const searchTopic = this.apiClient.getRandomSearchTopic();
-        const searchDomain = this.apiClient.getRandomSearchDomain();
+        const searchDomain = this.getBalancedSearchDomain();
         
         try {
-            this.addMessage(`🔎 Searching: "${searchTopic}" ${searchDomain}`);
+            this.addMessage(`🔎 Searching: "${searchTopic}" ${searchDomain || '(general web)'}`);
             
             const result = await this.apiClient.search(searchTopic, searchDomain);
             
             if (result.articles && result.articles.length > 0) {
                 const article = result.articles[0];
                 this.currentArticle = article;
+                
+                // Track domain usage for balancing
+                this.trackDomainUsage(searchDomain);
+                
                 return article;
             }
             
@@ -252,6 +258,53 @@ Provide your analysis prioritizing words with highest token savings potential.
     }
     
     /**
+     * Get balanced search domain to avoid over-representation
+     */
+    getBalancedSearchDomain() {
+        const domains = window.TokenCompressor.config.searchDomains;
+        
+        // Find domains that haven't been used recently or have low usage
+        const availableDomains = domains.filter(domain => {
+            const usageCount = this.domainUsageCount[domain] || 0;
+            const recentlyUsed = this.lastUsedDomains.includes(domain);
+            
+            // Prefer domains with low usage and not recently used
+            return usageCount < 3 && !recentlyUsed;
+        });
+        
+        // If all domains are overused, reset counters and use any domain
+        if (availableDomains.length === 0) {
+            this.domainUsageCount = {};
+            this.lastUsedDomains = [];
+            return domains[Math.floor(Math.random() * domains.length)];
+        }
+        
+        // Choose randomly from available domains
+        return availableDomains[Math.floor(Math.random() * availableDomains.length)];
+    }
+    
+    /**
+     * Track domain usage for balancing
+     */
+    trackDomainUsage(domain) {
+        if (!domain) return; // Skip empty domains (general searches)
+        
+        // Increment usage count
+        this.domainUsageCount[domain] = (this.domainUsageCount[domain] || 0) + 1;
+        
+        // Add to recent domains list
+        this.lastUsedDomains.push(domain);
+        
+        // Keep only last 5 recent domains
+        if (this.lastUsedDomains.length > 5) {
+            this.lastUsedDomains.shift();
+        }
+        
+        // Log for monitoring
+        this.addMessage(`📊 Domain balance: ${domain} used ${this.domainUsageCount[domain]} times`);
+    }
+    
+    /**
      * Parse AI response for multi-token words
      */
     parseDiscoveryResponse(responseText) {
@@ -323,7 +376,7 @@ Provide your analysis prioritizing words with highest token savings potential.
     }
     
     /**
-     * Get fallback article when search fails
+     * Get fallback article when search fails - ENHANCED with diverse content
      */
     getFallbackArticle() {
         const articles = [
@@ -331,13 +384,43 @@ Provide your analysis prioritizing words with highest token savings potential.
                 title: 'AI Research Developments',
                 content: `Artificial intelligence research continues to advance rapidly, with new developments in machine learning algorithms and neural network architectures. The implementation of transformer models has revolutionized natural language processing capabilities. Researchers are approximately certain that these advances will accelerate further. Unfortunately, computational requirements remain substantial, requiring significant infrastructure investments for large-scale deployment.`,
                 url: 'https://example.com/ai-research',
-                published: 'recent'
+                published: 'recent',
+                domain: 'tech'
             },
             {
-                title: 'Technology Implementation Strategies',
-                content: `Organizations worldwide are implementing comprehensive digital transformation initiatives to remain competitive. The development of cloud-native applications has enabled unprecedented scalability and flexibility. Companies are approximately doubling their technology investments annually. Unfortunately, many organizations struggle with the complexity of integration across multiple systems and platforms.`,
-                url: 'https://example.com/tech-strategy',
-                published: 'recent'
+                title: 'Cooking Recipe Innovation Techniques',
+                content: `Professional chefs are continuously developing innovative cooking techniques to enhance flavor profiles and presentation. The implementation of molecular gastronomy has revolutionized fine dining experiences worldwide. Unfortunately, many home cooks find these techniques intimidating and complex. The development of simplified methods has made gourmet cooking more accessible to amateur enthusiasts. Comprehensive recipe databases now provide step-by-step guidance for complex preparations.`,
+                url: 'https://example.com/cooking-innovation',
+                published: 'recent',
+                domain: 'lifestyle'
+            },
+            {
+                title: 'Global Economic Market Analysis',
+                content: `Financial markets are experiencing unprecedented volatility due to various geopolitical factors. The implementation of new regulatory frameworks has influenced trading strategies significantly. Unfortunately, market predictions remain challenging despite advanced analytical tools. Investment professionals are approximately doubling their research efforts to understand emerging patterns. Comprehensive market analysis requires examination of multiple economic indicators simultaneously.`,
+                url: 'https://example.com/market-analysis',
+                published: 'recent',
+                domain: 'business'
+            },
+            {
+                title: 'Travel Destination Guide Updates',
+                content: `Popular travel destinations are implementing comprehensive safety protocols to accommodate international visitors. The development of sustainable tourism practices has become increasingly important for environmental conservation. Unfortunately, many popular destinations are experiencing overtourism challenges. Travel professionals are approximately seeing increased demand for authentic local experiences. Comprehensive travel guides now incorporate cultural sensitivity and environmental awareness information.`,
+                url: 'https://example.com/travel-guide',
+                published: 'recent',
+                domain: 'lifestyle'
+            },
+            {
+                title: 'Medical Research Breakthrough Discoveries',
+                content: `Medical researchers have made significant breakthroughs in understanding complex disease mechanisms. The implementation of personalized medicine approaches has shown promising results in clinical trials. Unfortunately, many potential treatments remain years away from widespread availability. Comprehensive patient data analysis has revealed new therapeutic opportunities. The development of targeted therapies has revolutionized cancer treatment protocols significantly.`,
+                url: 'https://example.com/medical-research',
+                published: 'recent',
+                domain: 'science'
+            },
+            {
+                title: 'Community Organization Event Planning',
+                content: `Community organizations are implementing innovative approaches to engage local residents in meaningful activities. The development of inclusive programming has strengthened neighborhood connections significantly. Unfortunately, funding challenges continue to limit program expansion opportunities. Comprehensive event planning requires coordination between multiple stakeholder groups. The implementation of digital tools has streamlined volunteer management and communication processes.`,
+                url: 'https://example.com/community-events',
+                published: 'recent',
+                domain: 'social'
             }
         ];
         
@@ -345,16 +428,26 @@ Provide your analysis prioritizing words with highest token savings potential.
     }
     
     /**
-     * Get fallback analysis when all methods fail
+     * Get fallback analysis when all methods fail - Use diverse random words
      */
     getFallbackAnalysis() {
+        const diverseFallbackWords = [
+            { word: 'extraordinary', tokens: 2, frequency: 1 },
+            { word: 'manufacturing', tokens: 2, frequency: 1 }, 
+            { word: 'constitutional', tokens: 2, frequency: 1 },
+            { word: 'environmental', tokens: 2, frequency: 1 },
+            { word: 'international', tokens: 2, frequency: 1 },
+            { word: 'transportation', tokens: 2, frequency: 1 },
+            { word: 'revolutionary', tokens: 2, frequency: 1 },
+            { word: 'semiconductor', tokens: 2, frequency: 1 },
+            { word: 'collaboration', tokens: 2, frequency: 1 },
+            { word: 'investigation', tokens: 2, frequency: 1 }
+        ];
+        
+        // Return random selection of 3-4 words
+        const shuffled = diverseFallbackWords.sort(() => 0.5 - Math.random());
         return {
-            wastefulWords: [
-                { word: 'approximately', tokens: 3, frequency: 2 },
-                { word: 'implementation', tokens: 3, frequency: 1 },
-                { word: 'unfortunately', tokens: 3, frequency: 1 },
-                { word: 'comprehensive', tokens: 3, frequency: 1 }
-            ]
+            wastefulWords: shuffled.slice(0, 3 + Math.floor(Math.random() * 2))
         };
     }
     

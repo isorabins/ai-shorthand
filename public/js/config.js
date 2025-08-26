@@ -87,37 +87,84 @@ window.TokenCompressor.config = {
         typingIndicatorDelay: 2000
     },
     
-    // Search Topics for Discovery Agent
+    // Search Topics for Discovery Agent - ENHANCED with diverse domains
     searchTopics: [
+        // Tech & AI (keep some existing)
         'artificial intelligence research 2024',
         'machine learning breakthroughs',
-        'quantum computing advances', 
-        'climate change scientific findings',
-        'medical research discoveries',
         'software engineering innovations',
-        'cryptocurrency technology updates',
-        'space exploration missions',
-        'renewable energy developments',
-        'biotechnology progress',
-        'robotics automation trends',
         'cybersecurity threat analysis',
-        'data science methodologies',
-        'cloud computing architecture',
-        'blockchain applications business'
+        
+        // News & Current Events
+        'breaking news today',
+        'political developments',
+        'economic analysis reports',
+        'world news updates',
+        
+        // Business & Finance
+        'business strategy insights',
+        'market analysis reports',
+        'startup company news',
+        'investment strategies',
+        
+        // Lifestyle & Culture
+        'cooking recipes techniques',
+        'travel destination guides',
+        'health wellness tips',
+        'movie film reviews',
+        
+        // Education & Science
+        'medical research discoveries',
+        'climate change scientific findings',
+        'space exploration missions',
+        'educational methodology',
+        
+        // Social & Community
+        'social media discussions',
+        'community organization events',
+        'entertainment industry news',
+        'sports competition analysis'
     ],
     
-    // Search Domains for Variety
+    // Search Domains for Variety - ENHANCED with diverse content sources
     searchDomains: [
+        // News & Media (major sources)
+        'site:nytimes.com',
+        'site:cnn.com',
+        'site:bbc.com',
+        'site:reuters.com',
+        'site:washingtonpost.com',
+        
+        // Social & Community
+        'site:reddit.com',
+        'site:quora.com',
+        'site:stackoverflow.com',
+        'site:medium.com',
+        
+        // Academic & Research
         'site:arxiv.org',
         'site:nature.com',
-        'site:techcrunch.com',
-        'site:wired.com',
         'site:scientificamerican.com',
         'site:mit.edu',
-        'site:stanford.edu',
-        'site:medium.com',
+        
+        // Tech & Business
+        'site:techcrunch.com',
+        'site:wired.com',
         'site:venturebeat.com',
-        'site:ycombinator.com'
+        'site:ycombinator.com',
+        
+        // Lifestyle & Culture
+        'site:foodnetwork.com',
+        'site:travelandleisure.com',
+        'site:healthline.com',
+        'site:imdb.com',
+        
+        // General (no site restriction for varied content)
+        '', // Allow general web search
+        'cooking recipes',
+        'movie reviews',
+        'travel guides',
+        'health tips'
     ],
     
     // Error Handling Configuration

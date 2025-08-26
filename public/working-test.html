@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token Compressor - Working Test</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            margin: 20px; 
+            background: #1a1a1a; 
+            color: #0f0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .agent-window {
+            border: 2px solid #0f0;
+            padding: 15px;
+            margin: 10px 0;
+            background: #0a0a0a;
+        }
+        .agent-chat {
+            height: 200px;
+            overflow-y: auto;
+            background: #000;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #0f0;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 5px;
+            border-left: 3px solid #0f0;
+        }
+        .control-panel {
+            padding: 20px;
+            background: #0a0a0a;
+            border: 2px solid #0f0;
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            background: #000;
+            color: #0f0;
+            border: 2px solid #0f0;
+            cursor: pointer;
+            font-family: monospace;
+        }
+        button:hover {
+            background: #0f0;
+            color: #000;
+        }
+        .status {
+            display: inline-block;
+            padding: 5px 10px;
+            border: 1px solid #0f0;
+            margin: 5px;
+        }
+        .status.active { background: #0f0; color: #000; }
+        .status.error { border-color: #f00; color: #f00; }
+        .results {
+            background: #000;
+            padding: 15px;
+            border: 1px solid #0f0;
+            margin: 10px 0;
+            white-space: pre-wrap;
+        }
+    </style>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Token Compressor - Live Working Test</h1>
+        
+        <div class="control-panel">
+            <h2>Control Panel</h2>
+            <button onclick="runDiscovery()">🔍 Run Discovery</button>
+            <button onclick="runGeneration()">🎨 Run Generation</button>
+            <button onclick="runValidation()">✅ Run Validation</button>
+            <button onclick="runFullCycle()">🔄 Run Full Cycle</button>
+            <button onclick="clearLogs()">🗑️ Clear Logs</button>
+            
+            <div style="margin-top: 10px;">
+                Status: <span id="system-status" class="status">Ready</span>
+            </div>
+        </div>
+
+        <div class="agent-window">
+            <h3>🔍 Discovery Agent</h3>
+            <div id="discovery-status" class="status">idle</div>
+            <div id="discovery-chat" class="agent-chat"></div>
+        </div>
+
+        <div class="agent-window">
+            <h3>🎨 Generation Agent</h3>
+            <div id="generation-status" class="status">idle</div>
+            <div id="generation-chat" class="agent-chat"></div>
+        </div>
+
+        <div class="agent-window">
+            <h3>✅ Validation Agent</h3>
+            <div id="validation-status" class="status">idle</div>
+            <div id="test-results" class="results"></div>
+        </div>
+
+        <div class="agent-window">
+            <h3>📊 System Results</h3>
+            <div id="system-results" class="results"></div>
+        </div>
+    </div>
+
+    <!-- Load configuration and utilities -->
+    <script src="/js/config.js"></script>
+    <script src="/js/utils/error-handler.js"></script>
+    <script src="/js/utils/api-client.js"></script>
+    <script src="/js/utils/supabase-client.js"></script>
+    
+    <!-- Use full discovery agent with real web search -->
+    <script src="/js/agents/discovery-agent.js"></script>
+    
+    <script>
+        // Initialize system
+        let discoveryAgent;
+        let systemStatus = document.getElementById('system-status');
+        let systemResults = document.getElementById('system-results');
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Initializing Token Compressor...');
+            
+            // Initialize Supabase
+            if (window.TokenCompressor.SupabaseClient) {
+                window.TokenCompressor.SupabaseClient.init();
+            }
+            
+            // Create agents
+            discoveryAgent = new window.TokenCompressor.DiscoveryAgent();
+            
+            updateStatus('Ready', 'active');
+            log('System initialized and ready!');
+        });
+        
+        function updateStatus(text, type = '') {
+            systemStatus.textContent = text;
+            systemStatus.className = `status ${type}`;
+        }
+        
+        function log(message) {
+            const time = new Date().toLocaleTimeString();
+            systemResults.textContent += `[${time}] ${message}\n`;
+            systemResults.scrollTop = systemResults.scrollHeight;
+        }
+        
+        async function runDiscovery() {
+            updateStatus('Running Discovery...', 'active');
+            log('🔍 Starting discovery cycle...');
+            
+            try {
+                const result = await discoveryAgent.runDiscoveryCycle();
+                
+                if (result.wastefulWords && result.wastefulWords.length > 0) {
+                    log(`✅ Discovery complete! Found ${result.wastefulWords.length} compression targets:`);
+                    result.wastefulWords.forEach(word => {
+                        log(`  - "${word.word}" (${word.tokens} tokens, frequency: ${word.frequency})`);
+                    });
+                } else {
+                    log('⚠️ No compression targets found');
+                }
+                
+                updateStatus('Discovery Complete', 'active');
+                return result;
+                
+            } catch (error) {
+                log(`❌ Discovery error: ${error.message}`);
+                updateStatus('Error', 'error');
+                return null;
+            }
+        }
+        
+        async function runGeneration() {
+            updateStatus('Running Generation...', 'active');
+            log('🎨 Starting generation with real discovery...');
+            
+            try {
+                // First get real words from Discovery Agent
+                const discoveryResult = await discoveryAgent.runDiscoveryCycle();
+                
+                if (!discoveryResult.wastefulWords || discoveryResult.wastefulWords.length === 0) {
+                    log('⚠️ No words discovered, cannot generate compressions');
+                    return [];
+                }
+                
+                // Generate compressions for discovered words
+                const compressions = discoveryResult.wastefulWords.slice(0, 5).map(wordInfo => ({
+                    original: wordInfo.word,
+                    compressed: wordInfo.word.substring(0, 4) // Simple compression for testing
+                }));
+                
+                log(`✅ Generated ${compressions.length} compressions from discovered words:`);
+                compressions.forEach(comp => {
+                    log(`  - "${comp.original}" → "${comp.compressed}"`);
+                });
+                
+                updateStatus('Generation Complete', 'active');
+                return compressions;
+                
+            } catch (error) {
+                log(`❌ Generation error: ${error.message}`);
+                updateStatus('Error', 'error');
+                return [];
+            }
+        }
+        
+        async function runValidation() {
+            updateStatus('Running Validation...', 'active');
+            log('✅ Starting validation...');
+            
+            try {
+                const compressions = await runGeneration();
+                
+                // Call validation API
+                const response = await fetch('/api/tokenize', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        text: 'Test validation',
+                        compressions: compressions
+                    })
+                });
+                
+                const data = await response.json();
+                const results = data.compressionValidation;
+                
+                if (results) {
+                    log(`✅ Validation complete:`);
+                    log(`  - Tested: ${results.totalCompressions}`);
+                    log(`  - Approved: ${results.approvedCount}`);
+                    log(`  - Token savings: ${results.totalTokenSavings}`);
+                    
+                    results.compressions.forEach(comp => {
+                        const status = comp.isEffective ? '✅' : '❌';
+                        log(`  ${status} "${comp.original}" → "${comp.compressed}": ${comp.recommendation}`);
+                    });
+                }
+                
+                updateStatus('Validation Complete', 'active');
+                return results;
+                
+            } catch (error) {
+                log(`❌ Validation error: ${error.message}`);
+                updateStatus('Error', 'error');
+                return null;
+            }
+        }
+        
+        async function runFullCycle() {
+            log('🔄 Starting full compression cycle...');
+            
+            await runDiscovery();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await runGeneration();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await runValidation();
+            
+            log('🎉 Full cycle complete!');
+            updateStatus('Cycle Complete', 'active');
+        }
+        
+        function clearLogs() {
+            systemResults.textContent = '';
+            document.getElementById('discovery-chat').innerHTML = '';
+            document.getElementById('generation-chat').innerHTML = '';
+            document.getElementById('test-results').innerHTML = '';
+            log('Logs cleared');
+        }
+    </script>
+</body>
+</html>

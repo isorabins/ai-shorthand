@@ -1,0 +1,187 @@
+/* GameBoy Color / GeoCities Aesthetic */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* CSS Custom Properties for Theme */
+:root {
+    --gameboy-bg-primary: #8b956d;
+    --gameboy-bg-secondary: #9cA971;
+    --gameboy-text-dark: #2e3020;
+    --gameboy-text-light: #c4cfa1;
+    --gameboy-accent: #4a5139;
+    --gameboy-highlight: #9cA971;
+    --gameboy-border: #2e3020;
+    --gameboy-shadow: #1a1c10;
+    
+    --font-main: 'VT323', monospace;
+    --border-width: 4px;
+    --shadow-offset: 6px;
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background: linear-gradient(
+        45deg, 
+        var(--gameboy-bg-primary) 25%, 
+        var(--gameboy-bg-secondary) 25%, 
+        var(--gameboy-bg-secondary) 50%, 
+        var(--gameboy-bg-primary) 50%, 
+        var(--gameboy-bg-primary) 75%, 
+        var(--gameboy-bg-secondary) 75%, 
+        var(--gameboy-bg-secondary)
+    );
+    background-size: 40px 40px;
+    color: var(--gameboy-text-dark);
+    font-size: 18px;
+    line-height: 1.4;
+    min-height: 100vh;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Typography */
+h1 {
+    font-size: 48px;
+    color: var(--gameboy-text-dark);
+    text-shadow: 2px 2px 0px var(--gameboy-bg-primary);
+}
+
+.tagline {
+    font-size: 20px;
+    color: var(--gameboy-accent);
+    margin-top: 10px;
+}
+
+/* Buttons */
+.submit-btn {
+    padding: 12px 24px;
+    font-family: var(--font-main);
+    font-size: 20px;
+    background: var(--gameboy-accent);
+    color: var(--gameboy-text-light);
+    border: 3px solid var(--gameboy-border);
+    cursor: pointer;
+    box-shadow: 4px 4px 0px var(--gameboy-border);
+    transition: all 0.2s;
+}
+
+.submit-btn:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--gameboy-border);
+}
+
+.submit-btn:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+}
+
+/* Form Elements */
+input[type="text"],
+input[type="email"] {
+    padding: 10px;
+    font-family: var(--font-main);
+    font-size: 18px;
+    background: #e8ecd5;
+    border: 2px solid var(--gameboy-border);
+    color: var(--gameboy-text-dark);
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus {
+    outline: none;
+    background: #f0f3e0;
+    box-shadow: 0 0 0 2px var(--gameboy-bg-primary);
+}
+
+input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+label {
+    color: var(--gameboy-accent);
+    font-size: 18px;
+}
+
+/* GameBoy Window Frame */
+.gameboy-window {
+    background: var(--gameboy-text-light);
+    border: var(--border-width) solid var(--gameboy-border);
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-border);
+}
+
+/* Dark GameBoy Window (for testing zone, etc.) */
+.gameboy-window-dark {
+    background: var(--gameboy-border);
+    border: var(--border-width) solid var(--gameboy-shadow);
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--gameboy-shadow);
+    color: var(--gameboy-text-light);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    h1 {
+        font-size: 36px;
+    }
+    
+    .tagline {
+        font-size: 18px;
+    }
+    
+    body {
+        font-size: 16px;
+    }
+    
+    .submit-btn {
+        font-size: 18px;
+        padding: 10px 20px;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 12px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gameboy-bg-primary);
+    border: 2px solid var(--gameboy-border);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--gameboy-border);
+    border: 2px solid var(--gameboy-accent);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--gameboy-accent);
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+    :root {
+        --gameboy-text-dark: #000;
+        --gameboy-text-light: #fff;
+        --gameboy-border: #000;
+    }
+}

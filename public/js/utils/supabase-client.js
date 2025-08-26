@@ -9,12 +9,18 @@ window.TokenCompressor.SupabaseClient = {
      * Initialize Supabase client
      */
     init() {
+        console.log(`🔵 [SUPABASE-CLIENT] init() called`);
         const config = window.TokenCompressor.config;
         
+        console.log(`🔵 [SUPABASE-CLIENT] Checking for Supabase library...`);
         if (typeof window.supabase === 'undefined') {
-            console.error('Supabase library not loaded');
+            console.error(`❌ [SUPABASE-CLIENT] Supabase library not loaded`);
             return false;
         }
+        console.log(`✅ [SUPABASE-CLIENT] Supabase library found`);
+        
+        console.log(`🔵 [SUPABASE-CLIENT] Creating client with URL: ${config.supabase.url}`);
+        console.log(`🔵 [SUPABASE-CLIENT] Anon key length: ${config.supabase.anonKey?.length || 0}`);
         
         this.client = window.supabase.createClient(
             config.supabase.url,
@@ -22,11 +28,11 @@ window.TokenCompressor.SupabaseClient = {
         );
         
         if (!this.client) {
-            console.error('Failed to initialize Supabase client');
+            console.error(`❌ [SUPABASE-CLIENT] Failed to initialize Supabase client`);
             return false;
         }
         
-        console.log('📡 Supabase client initialized');
+        console.log('✅ [SUPABASE-CLIENT] Supabase client initialized successfully');
         return true;
     },
     
@@ -34,9 +40,21 @@ window.TokenCompressor.SupabaseClient = {
      * Submit human compression idea
      */
     async submitCompression(data) {
-        if (!this.client) return null;
+        console.log(`📝 [SUPABASE-CLIENT] submitCompression() called`);
+        console.log(`📝 [SUPABASE-CLIENT] Data:`, { 
+            name: data.name, 
+            email: data.email?.replace(/(.{3}).*(@.*)/, '$1***$2'), // Mask email for privacy
+            original: data.original, 
+            compressed: data.compressed 
+        });
+        
+        if (!this.client) {
+            console.error(`❌ [SUPABASE-CLIENT] No client available`);
+            return null;
+        }
         
         try {
+            console.log(`🔵 [SUPABASE-CLIENT] Inserting into submissions table...`);
             const { data: result, error } = await this.client
                 .from('submissions')
                 .insert({
@@ -48,10 +66,16 @@ window.TokenCompressor.SupabaseClient = {
                     tested: false
                 });
             
-            if (error) throw error;
+            if (error) {
+                console.error(`❌ [SUPABASE-CLIENT] Insert error:`, error);
+                throw error;
+            }
+            
+            console.log(`✅ [SUPABASE-CLIENT] Submission successful:`, result);
             return result;
             
         } catch (error) {
+            console.error(`❌ [SUPABASE-CLIENT] submitCompression() failed:`, error);
             throw await window.TokenCompressor.ErrorHandler.handleError(error, {
                 operation: 'submit_compression',
                 formField: 'compression-form'
@@ -63,20 +87,31 @@ window.TokenCompressor.SupabaseClient = {
      * Get validated compressions from codex
      */
     async getCompressions(limit = 50) {
-        if (!this.client) return [];
+        console.log(`📊 [SUPABASE-CLIENT] getCompressions() called with limit: ${limit}`);
+        
+        if (!this.client) {
+            console.error(`❌ [SUPABASE-CLIENT] No client available`);
+            return [];
+        }
         
         try {
+            console.log(`🔵 [SUPABASE-CLIENT] Querying compressions table...`);
             const { data, error } = await this.client
                 .from('compressions')
                 .select('*')
                 .order('created_at', { ascending: false })
                 .limit(limit);
             
-            if (error) throw error;
+            if (error) {
+                console.error(`❌ [SUPABASE-CLIENT] Query error:`, error);
+                throw error;
+            }
+            
+            console.log(`✅ [SUPABASE-CLIENT] Retrieved ${data?.length || 0} compressions`);
             return data || [];
             
         } catch (error) {
-            console.error('Failed to fetch compressions:', error);
+            console.error(`❌ [SUPABASE-CLIENT] getCompressions() failed:`, error);
             return [];
         }
     },
@@ -85,9 +120,22 @@ window.TokenCompressor.SupabaseClient = {
      * Save discovered compression to database
      */
     async saveCompression(compression) {
-        if (!this.client) return null;
+        console.log(`💾 [SUPABASE-CLIENT] saveCompression() called`);
+        console.log(`💾 [SUPABASE-CLIENT] Compression:`, {
+            original: compression.original,
+            compressed: compression.compressed,
+            source: compression.source,
+            hour: compression.hour,
+            tokensSaved: compression.tokensSaved || 0
+        });
+        
+        if (!this.client) {
+            console.error(`❌ [SUPABASE-CLIENT] No client available`);
+            return null;
+        }
         
         try {
+            console.log(`🔵 [SUPABASE-CLIENT] Inserting into compressions table...`);
             const { data, error } = await this.client
                 .from('compressions')
                 .insert({
@@ -98,11 +146,16 @@ window.TokenCompressor.SupabaseClient = {
                     tokens_saved: compression.tokensSaved || 0
                 });
             
-            if (error) throw error;
+            if (error) {
+                console.error(`❌ [SUPABASE-CLIENT] Insert error:`, error);
+                throw error;
+            }
+            
+            console.log(`✅ [SUPABASE-CLIENT] Compression saved successfully:`, data);
             return data;
             
         } catch (error) {
-            console.error('Failed to save compression:', error);
+            console.error(`❌ [SUPABASE-CLIENT] saveCompression() failed:`, error);
             return null;
         }
     },
@@ -136,14 +189,23 @@ window.TokenCompressor.SupabaseClient = {
      * Get system statistics
      */
     async getStats() {
-        if (!this.client) return {};
+        console.log(`📈 [SUPABASE-CLIENT] getStats() called`);
+        
+        if (!this.client) {
+            console.error(`❌ [SUPABASE-CLIENT] No client available`);
+            return {};
+        }
         
         try {
+            console.log(`🔵 [SUPABASE-CLIENT] Querying stats table...`);
             const { data, error } = await this.client
                 .from('stats')
                 .select('*');
             
-            if (error) throw error;
+            if (error) {
+                console.error(`❌ [SUPABASE-CLIENT] Query error:`, error);
+                throw error;
+            }
             
             // Convert to key-value object
             const stats = {};
@@ -151,10 +213,11 @@ window.TokenCompressor.SupabaseClient = {
                 stats[stat.metric_name] = stat.metric_value;
             });
             
+            console.log(`✅ [SUPABASE-CLIENT] Retrieved ${Object.keys(stats).length} stats:`, stats);
             return stats;
             
         } catch (error) {
-            console.error('Failed to fetch stats:', error);
+            console.error(`❌ [SUPABASE-CLIENT] getStats() failed:`, error);
             return {};
         }
     },

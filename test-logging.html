@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Compressor - Logging Test</title>
+    <style>
+        body { 
+            font-family: monospace; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            background: #1a1a1a;
+            color: #00ff00;
+        }
+        button { 
+            padding: 10px 20px; 
+            margin: 10px; 
+            background: #333; 
+            color: #00ff00; 
+            border: 1px solid #555; 
+            cursor: pointer;
+        }
+        button:hover { background: #555; }
+        #output { 
+            background: #222; 
+            padding: 20px; 
+            border: 1px solid #555; 
+            margin-top: 20px;
+            height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Token Compressor - Enhanced Logging Test</h1>
+    <p>Open Developer Console (F12) to see the enhanced logging in action!</p>
+    
+    <button onclick="testTokenize()">Test Tokenize API</button>
+    <button onclick="testSearch()">Test Search API</button>
+    <button onclick="testSupabase()">Test Supabase Client</button>
+    <button onclick="testLearningSystem()">Test Learning System</button>
+    <button onclick="clearOutput()">Clear Output</button>
+    
+    <div id="output"></div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/utils/error-handler.js"></script>
+    <script src="/js/utils/api-client.js"></script>
+    <script src="/js/utils/supabase-client.js"></script>
+    <script src="/js/learning-system.js"></script>
+
+    <script>
+        function log(message) {
+            console.log(message);
+            const output = document.getElementById('output');
+            output.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${message}</div>`;
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '';
+            console.clear();
+        }
+
+        async function testTokenize() {
+            log('🔢 Testing Tokenize API with enhanced logging...');
+            try {
+                const result = await window.TokenCompressor.APIClient.tokenize('Unfortunately, the implementation was approximately comprehensive.');
+                log(`✅ Tokenize result: ${result.totalTokens} tokens found`);
+                log(`📊 Multi-token words: ${JSON.stringify(result.multiTokenWords)}`);
+            } catch (error) {
+                log(`❌ Tokenize error: ${error.message}`);
+            }
+        }
+
+        async function testSearch() {
+            log('🔍 Testing Search API with enhanced logging...');
+            try {
+                const result = await window.TokenCompressor.APIClient.search('artificial intelligence', 'wikipedia.org');
+                log(`✅ Search result: ${result.articles ? result.articles.length : 0} articles found`);
+            } catch (error) {
+                log(`❌ Search error: ${error.message}`);
+            }
+        }
+
+        async function testSupabase() {
+            log('💾 Testing Supabase Client with enhanced logging...');
+            try {
+                const initialized = window.TokenCompressor.SupabaseClient.init();
+                log(`📡 Supabase init result: ${initialized}`);
+                
+                if (initialized) {
+                    const stats = await window.TokenCompressor.SupabaseClient.getStats();
+                    log(`📈 Stats retrieved: ${Object.keys(stats).length} metrics`);
+                }
+            } catch (error) {
+                log(`❌ Supabase error: ${error.message}`);
+            }
+        }
+
+        async function testLearningSystem() {
+            log('🧠 Testing Learning System with enhanced logging...');
+            try {
+                if (window.TokenCompressor.learningSystem) {
+                    const context = await window.TokenCompressor.learningSystem.getAgentContext();
+                    log(`📚 Agent context: ${Object.keys(context.existingCompressions).length} existing compressions`);
+                    log(`🎯 Learning patterns: ${Object.keys(context.learningPatterns).length} patterns`);
+                    log(`❌ Recent failures: ${context.recentFailures.length} failures to avoid`);
+                }
+            } catch (error) {
+                log(`❌ Learning system error: ${error.message}`);
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Token Compressor Logging Test Page Loaded');
+            log('📋 Click buttons above to test enhanced logging');
+            log('💡 Check browser console for detailed logs');
+        });
+    </script>
+</body>
+</html>

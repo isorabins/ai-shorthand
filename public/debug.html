@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token Compressor - Debug Mode</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #1a1a1a; color: #0f0; }
+        .log { margin: 5px 0; padding: 5px; border-left: 3px solid #0f0; }
+        .error { border-color: #f00; color: #f00; }
+        .success { border-color: #0f0; }
+        .warning { border-color: #ff0; color: #ff0; }
+    </style>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <h1>🔧 Token Compressor - Debug Mode</h1>
+    <div id="logs"></div>
+
+    <!-- Load all scripts in order -->
+    <script src="/js/config.js"></script>
+    <script src="/js/utils/error-handler.js"></script>
+    <script src="/js/utils/api-client.js"></script>
+    <script src="/js/utils/supabase-client.js"></script>
+    <script src="/js/learning-system.js"></script>
+    <script src="/js/agents/discovery-agent.js"></script>
+    <script src="/js/agents/generation-agent.js"></script>
+    <script src="/js/agents/validation-agent.js"></script>
+    <script src="/js/orchestrator.js"></script>
+    <script src="/js/ui/real-time-ui.js"></script>
+
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'log') {
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(div);
+            console[type](message);
+        }
+
+        // Override console methods to capture all logs
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = (...args) => {
+            log(args.join(' '), 'success');
+            originalLog.apply(console, args);
+        };
+        
+        console.error = (...args) => {
+            log(args.join(' '), 'error');
+            originalError.apply(console, args);
+        };
+        
+        console.warn = (...args) => {
+            log(args.join(' '), 'warning');
+            originalWarn.apply(console, args);
+        };
+
+        // Debug initialization
+        window.addEventListener('DOMContentLoaded', async () => {
+            log('🚀 Starting debug initialization...', 'success');
+            
+            // Check if window.TokenCompressor exists
+            if (!window.TokenCompressor) {
+                log('❌ window.TokenCompressor not found!', 'error');
+                return;
+            }
+            log('✅ window.TokenCompressor exists', 'success');
+            
+            // Check config
+            if (!window.TokenCompressor.config) {
+                log('❌ Config not loaded!', 'error');
+                return;
+            }
+            log('✅ Config loaded', 'success');
+            
+            // Check Supabase library
+            if (typeof window.supabase === 'undefined') {
+                log('❌ Supabase library not loaded!', 'error');
+                return;
+            }
+            log('✅ Supabase library loaded', 'success');
+            
+            // Try to initialize Supabase client
+            try {
+                if (window.TokenCompressor.SupabaseClient) {
+                    const result = window.TokenCompressor.SupabaseClient.init();
+                    if (result) {
+                        log('✅ Supabase client initialized successfully', 'success');
+                    } else {
+                        log('❌ Supabase client initialization failed', 'error');
+                    }
+                } else {
+                    log('❌ SupabaseClient not found', 'error');
+                }
+            } catch (error) {
+                log(`❌ Supabase init error: ${error.message}`, 'error');
+            }
+            
+            // Check API client
+            if (!window.TokenCompressor.APIClient) {
+                log('❌ API Client not loaded!', 'error');
+                return;
+            }
+            log('✅ API Client loaded', 'success');
+            
+            // Check agents
+            const agents = ['DiscoveryAgent', 'GenerationAgent', 'ValidationAgent'];
+            for (const agent of agents) {
+                if (window.TokenCompressor[agent]) {
+                    log(`✅ ${agent} loaded`, 'success');
+                } else {
+                    log(`❌ ${agent} not loaded!`, 'error');
+                }
+            }
+            
+            // Check orchestrator
+            if (window.TokenCompressor.Orchestrator) {
+                log('✅ Orchestrator loaded', 'success');
+            } else {
+                log('❌ Orchestrator not loaded!', 'error');
+            }
+            
+            // Try to create instances
+            try {
+                log('🔧 Creating agent instances...', 'warning');
+                
+                // Try to instantiate Discovery Agent
+                if (window.TokenCompressor.DiscoveryAgent) {
+                    const discovery = new window.TokenCompressor.DiscoveryAgent();
+                    log('✅ Discovery Agent instantiated', 'success');
+                }
+                
+                // Try to instantiate Generation Agent
+                if (window.TokenCompressor.GenerationAgent) {
+                    const generation = new window.TokenCompressor.GenerationAgent();
+                    log('✅ Generation Agent instantiated', 'success');
+                }
+                
+                // Try to instantiate Validation Agent
+                if (window.TokenCompressor.ValidationAgent) {
+                    const validation = new window.TokenCompressor.ValidationAgent();
+                    log('✅ Validation Agent instantiated', 'success');
+                }
+                
+            } catch (error) {
+                log(`❌ Agent instantiation error: ${error.message}`, 'error');
+                log(`Stack: ${error.stack}`, 'error');
+            }
+            
+            // Test API connectivity
+            try {
+                log('🔧 Testing API connectivity...', 'warning');
+                const response = await fetch('/api/test');
+                const data = await response.json();
+                log(`✅ API Test: ${data.message}`, 'success');
+            } catch (error) {
+                log(`❌ API test failed: ${error.message}`, 'error');
+            }
+            
+            log('🏁 Debug initialization complete', 'success');
+        });
+        
+        // Catch any uncaught errors
+        window.addEventListener('error', (event) => {
+            log(`❌ Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`, 'error');
+        });
+    </script>
+</body>
+</html>

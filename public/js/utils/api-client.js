@@ -9,8 +9,18 @@ window.TokenCompressor.APIClient = {
      * Make API request with error handling and retries
      */
     async request(endpoint, options = {}) {
+        const timestamp = new Date().toISOString();
+        const requestId = `api-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] ========== API REQUEST START ==========`);
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Endpoint: ${endpoint}`);
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Method: ${options.method || 'POST'}`);
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Options:`, JSON.stringify(options, null, 2));
+        
         const config = window.TokenCompressor.config;
         const url = `${this.baseURL}${endpoint}`;
+        
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Full URL: ${url}`);
         
         const defaultOptions = {
             method: 'POST',
@@ -20,25 +30,44 @@ window.TokenCompressor.APIClient = {
             ...options
         };
         
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Final options:`, JSON.stringify(defaultOptions, null, 2));
+        
         let lastError;
         const maxRetries = config.errorHandling.maxRetries;
+        console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Max retries configured: ${maxRetries}`);
         
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Attempt ${attempt + 1}/${maxRetries + 1}`);
+            
             try {
+                console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Making fetch request...`);
                 const response = await fetch(url, defaultOptions);
                 
+                console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Response status: ${response.status}`);
+                console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Response headers:`, JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2));
+                
                 if (!response.ok) {
+                    console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Response not OK, parsing error...`);
                     const errorData = await response.json().catch(() => ({}));
+                    console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Error data:`, JSON.stringify(errorData, null, 2));
                     throw new Error(`API Error ${response.status}: ${errorData.error || 'Unknown error'}`);
                 }
                 
+                console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Parsing successful response...`);
                 const data = await response.json();
+                console.log(`✅ [API-CLIENT] [${timestamp}] [${requestId}] Response data:`, JSON.stringify(data, null, 2));
+                console.log(`✅ [API-CLIENT] [${timestamp}] [${requestId}] ========== API REQUEST SUCCESS ==========`);
                 return data;
                 
             } catch (error) {
+                console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Error on attempt ${attempt + 1}:`, error);
+                console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Error message:`, error.message);
+                console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Error stack:`, error.stack);
+                
                 lastError = error;
                 
                 if (attempt === maxRetries) {
+                    console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] Max retries exceeded, calling error handler`);
                     throw await window.TokenCompressor.ErrorHandler.handleError(error, {
                         operation: `api_${endpoint.replace('/', '_')}`,
                         retryCount: attempt
@@ -47,10 +76,12 @@ window.TokenCompressor.APIClient = {
                 
                 // Exponential backoff
                 const delay = config.errorHandling.retryDelay * Math.pow(2, attempt);
+                console.log(`🔵 [API-CLIENT] [${timestamp}] [${requestId}] Waiting ${delay}ms before retry...`);
                 await this.sleep(delay);
             }
         }
         
+        console.log(`❌ [API-CLIENT] [${timestamp}] [${requestId}] ========== API REQUEST FAILED ==========`);
         throw lastError;
     },
     
@@ -58,17 +89,23 @@ window.TokenCompressor.APIClient = {
      * Search for articles using Brave Search
      */
     async search(query, domain = null) {
-        return await this.request('/search', {
+        console.log(`🔍 [API-CLIENT] search() called with query: "${query}", domain: "${domain}"`);
+        const result = await this.request('/search', {
             method: 'POST',
             body: JSON.stringify({ query, domain })
         });
+        console.log(`🔍 [API-CLIENT] search() result:`, result?.articles ? `${result.articles.length} articles found` : 'no articles');
+        return result;
     },
     
     /**
      * Call DeepSeek API for Discovery or Validation agents
      */
     async deepseek(messages, agentType, options = {}) {
-        return await this.request('/deepseek', {
+        console.log(`🤖 [API-CLIENT] deepseek() called for agent: ${agentType}`);
+        console.log(`🤖 [API-CLIENT] deepseek() messages: ${messages.length} messages`);
+        console.log(`🤖 [API-CLIENT] deepseek() options:`, options);
+        const result = await this.request('/deepseek', {
             method: 'POST',
             body: JSON.stringify({
                 messages,
@@ -77,13 +114,17 @@ window.TokenCompressor.APIClient = {
                 max_tokens: options.maxTokens || 500
             })
         });
+        console.log(`🤖 [API-CLIENT] deepseek() result:`, result?.response ? `${result.response.length} chars` : 'no response');
+        return result;
     },
     
     /**
      * Call Groq API for Generation agent
      */
     async groq(messages, options = {}) {
-        return await this.request('/groq', {
+        console.log(`🎨 [API-CLIENT] groq() called with ${messages.length} messages`);
+        console.log(`🎨 [API-CLIENT] groq() options:`, options);
+        const result = await this.request('/groq', {
             method: 'POST',
             body: JSON.stringify({
                 messages,
@@ -91,23 +132,29 @@ window.TokenCompressor.APIClient = {
                 max_tokens: options.maxTokens || 500
             })
         });
+        console.log(`🎨 [API-CLIENT] groq() result:`, result?.response ? `${result.response.length} chars` : 'no response');
+        return result;
     },
     
     /**
      * Tokenize text using tiktoken
      */
     async tokenize(text, encoding = 'cl100k_base') {
-        return await this.request('/tokenize', {
+        console.log(`🔢 [API-CLIENT] tokenize() called with text: ${text.length} chars, encoding: ${encoding}`);
+        const result = await this.request('/tokenize', {
             method: 'POST',
             body: JSON.stringify({ text, encoding })
         });
+        console.log(`🔢 [API-CLIENT] tokenize() result:`, result?.tokens ? `${result.tokens} tokens` : 'no token count');
+        return result;
     },
     
     /**
      * Post to Twitter (for ceremony announcements)
      */
     async tweet(compressions, hour, humanWins, aiWins) {
-        return await this.request('/twitter', {
+        console.log(`🐦 [API-CLIENT] tweet() called for hour ${hour}: ${compressions.length} compressions, H:${humanWins} vs AI:${aiWins}`);
+        const result = await this.request('/twitter', {
             method: 'POST',
             body: JSON.stringify({
                 compressions,
@@ -116,6 +163,8 @@ window.TokenCompressor.APIClient = {
                 aiWins
             })
         });
+        console.log(`🐦 [API-CLIENT] tweet() result:`, result?.success ? 'SUCCESS' : 'FAILED');
+        return result;
     },
     
     /**
